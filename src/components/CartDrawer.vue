@@ -23,7 +23,7 @@
       </div>
       <div class="cart-drawer-footer">
         <div class="cart-drawer-total"><span>Total</span><span>{{ carrito.totalFormateado }}</span></div>
-        <button class="btn-primary" style="width:100%;" @click="carrito.pagarDesdeCarrito()">Pagar</button>
+        <button class="btn-primary" style="width:100%;" @click="pagar">Pagar</button>
       </div>
     </div>
   </div>
@@ -38,6 +38,13 @@ export default {
   data() {
     return { carrito: useCarritoStore() };
   },
-  methods: { formatearPrecio }
+  methods: {
+    formatearPrecio,
+    pagar() {
+      if (this.carrito.pagarDesdeCarrito()) {
+        this.$router.push({ name: 'checkout' });
+      }
+    }
+  }
 };
 </script>

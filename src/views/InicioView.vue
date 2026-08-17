@@ -1,22 +1,24 @@
 <template>
-  <store-header></store-header>
-  <banner-slider></banner-slider>
-  <div class="quick-links">
-    <button class="tile" @click="$router.push({name:'categoria'})">CATEGORIA<br>PRODUCTO</button>
-    <button class="tile" @click="$router.push({name:'categoria'})">CATEGORIA<br>PRODUCTO</button>
-    <button class="tile" @click="$router.push({name:'categoria'})">SERVICIO</button>
-    <button class="tile" @click="$router.push({name:'categoria'})">SERVICIO</button>
-  </div>
-  <div class="products-wrap">
-    <div class="product-row" v-for="(fila,indiceFila) in filasInicio" :key="indiceFila">
-      <product-card v-for="producto in fila" :key="producto.id" :product="producto"></product-card>
+  <div class="view">
+    <store-header></store-header>
+    <banner-slider></banner-slider>
+    <div class="quick-links">
+      <button class="tile" @click="$router.push({name:'categoria'})">CATEGORIA<br>PRODUCTO</button>
+      <button class="tile" @click="$router.push({name:'categoria'})">CATEGORIA<br>PRODUCTO</button>
+      <button class="tile" @click="$router.push({name:'categoria'})">SERVICIO</button>
+      <button class="tile" @click="$router.push({name:'categoria'})">SERVICIO</button>
     </div>
+    <div class="products-wrap">
+      <div class="product-row" v-for="(fila,indiceFila) in filasInicio" :key="indiceFila">
+        <product-card v-for="producto in fila" :key="producto.id" :product="producto"></product-card>
+      </div>
+    </div>
+    <div class="continua">(continua con ofertas etc)</div>
+    <footer class="site-footer">
+      DISCLAIMERS, CONTACTO, UBICACIÓN, ETC.
+      <router-link class="admin-link" :to="{name:'admin-panel'}">Panel Administrador →</router-link>
+    </footer>
   </div>
-  <div class="continua">(continua con ofertas etc)</div>
-  <footer class="site-footer">
-    DISCLAIMERS, CONTACTO, UBICACIÓN, ETC.
-    <router-link class="admin-link" :to="{name:'admin-panel'}">Panel Administrador →</router-link>
-  </footer>
 </template>
 
 <script>

@@ -9,7 +9,7 @@
         <button class="pay-card oca" :class="{selected: carrito.metodoPagoSeleccionado==='oca'}" @click="carrito.metodoPagoSeleccionado='oca'">OCA</button>
       </div>
       <button class="bank-transfer" :class="{selected: carrito.metodoPagoSeleccionado==='bank'}" @click="carrito.metodoPagoSeleccionado='bank'">Transferencia<br>bancaria</button>
-      <button class="modal-btn" @click="carrito.continuarPago()">Continuar</button>
+      <button class="modal-btn" @click="continuar">Continuar</button>
       <button class="modal-help" @click="avisoDemo('Un asesor te contactará en breve')">Necesito ayuda</button>
     </div>
   </div>
@@ -36,7 +36,7 @@
       </div>
       <div class="card-form-row"><div class="fg"><label>Correo Electrónico:</label><input type="email"></div></div>
       <div class="card-form-row"><div class="fg"><label>Dirección:</label><input type="text"></div></div>
-      <button class="modal-btn" @click="carrito.finalizarPago()">Finalizar pago</button>
+      <button class="modal-btn" @click="finalizar">Finalizar pago</button>
       <button class="modal-help" @click="avisoDemo('Un asesor te contactará en breve')">Necesito ayuda</button>
     </div>
   </div>
@@ -51,7 +51,19 @@ export default {
     return { carrito: useCarritoStore() };
   },
   methods: {
-    avisoDemo(msg) { alert(msg); }
+    avisoDemo(msg) { alert(msg); },
+    continuar() {
+      const resultado = this.carrito.continuarPago();
+      if (resultado === 'transferencia') {
+        this.$router.push({ name: 'inicio' });
+      }
+      // si resultado === 'tarjeta', el modal de tarjeta ya se abrió solo
+    },
+    finalizar() {
+      this.carrito.finalizarPago(() => {
+        this.$router.push({ name: 'inicio' });
+      });
+    }
   }
 };
 </script>
