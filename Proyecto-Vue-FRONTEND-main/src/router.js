@@ -7,6 +7,7 @@ import CheckoutView from './views/CheckoutView.vue';
 import LoginView from './views/LoginView.vue';
 import RegistroView from './views/RegistroView.vue';
 import AdminPanelView from './views/admin/AdminPanelView.vue';
+import PerfilView from './views/PerfilView.vue';
 import AdminProductosView from './views/admin/AdminProductosView.vue';
 import AdminEmpleadosView from './views/admin/AdminEmpleadosView.vue';
 import AdminOrdenesView from './views/admin/AdminOrdenesView.vue';
@@ -29,7 +30,8 @@ const router = createRouter({
     { path: '/admin/productos', name: 'admin-productos', component: AdminProductosView },
     { path: '/admin/empleados', name: 'admin-empleados', component: AdminEmpleadosView },
     { path: '/admin/ordenes', name: 'admin-ordenes', component: AdminOrdenesView },
-    { path: '/admin/analiticas', name: 'admin-analiticas', component: AdminAnaliticasView }
+    { path: '/admin/analiticas', name: 'admin-analiticas', component: AdminAnaliticasView },
+    { path: '/perfil', name: 'perfil', component: PerfilView }
   ]
 });
 

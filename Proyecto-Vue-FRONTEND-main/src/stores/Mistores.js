@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import apiClient from '../Api/api.js'
+import apiClient from '@/Api/api.js'
 
 export const useMisStores = defineStore('misStores', {
     state: () => ({ 

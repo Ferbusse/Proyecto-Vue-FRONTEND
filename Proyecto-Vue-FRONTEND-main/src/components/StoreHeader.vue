@@ -14,13 +14,19 @@
     </div>
     <div class="account">
       <div class="user-icon">👤</div>
-      <div class="links">
+      <!-- si el usuario esta logueado, mostramos su nombre y el enlace al perfil -->
+      <div v-if="usuario" class="user-profile-link">
+        <!-- al tocar esto, lo manda a la vista de perfil -->
+        <router-link :to="{ name: 'perfil'}">{{ usuario.name }}</router-link>
+      </div>
+      <div v-else class="links">
         <router-link :to="{name:'login'}">Iniciar sesión</router-link>
         <router-link :to="{name:'registro'}">Registrarse</router-link>
       </div>
     </div>
   </div>
   <div class="navbar">
+
     <div class="categorias-wrap" :class="{open: categoriasAbiertas}">
       <button class="categorias-btn" @click="categoriasAbiertas = !categoriasAbiertas"><span class="bars">≡</span> CATEGORÍAS ▾</button>
       <div class="mega-menu">
@@ -58,6 +64,7 @@
 </template>
 
 <script>
+import api from '@/Api/api.js';
 import logo from '../assets/logo.png';
 import { CATALOGO, formatearPrecio } from '../catalog.js';
 import { useCarritoStore } from '../stores/carrito.js';
@@ -80,6 +87,7 @@ export default {
       logoUrl: logo,
       busquedaAbierta: false,
       categoriasAbiertas: false,
+      usuario: null, // aqui guardaremos la información del usuario logueado
       resultadosBusqueda: [CATALOGO[2], CATALOGO[7]],
       // Nombres todavía sin definir — placeholders genéricos hasta decidir
       // la taxonomía real de categorías. Ícono genérico (igual para todas)
@@ -110,6 +118,15 @@ export default {
   computed: {
     categoriaActivaData() {
       return this.categoriasMenu.find(c => c.id === this.categoriaActiva);
+    }
+  },
+  async mounted() {
+    try {
+      // pedimos a laravel los datos del usuario logueado
+      const response = await api.get('/user');
+      this.usuario = response.data; // guardamos el nombre, correo, etc
+    } catch (error) {
+      console.log('No hay usuario logueado:');
     }
   },
   methods: {

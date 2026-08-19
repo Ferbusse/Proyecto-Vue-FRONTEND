@@ -20,7 +20,7 @@
       <p v-if="error" class="auth-error">{{ error }}</p>
       <button class="auth-submit" type="submit" :disabled="cargando">{{ cargando ? 'Registrando...' : 'Registrarse' }}</button>
       </form>
-      <div class="auth-switch">En cambio... <router-link :to="{name:'login'}">Iniciar Sesión</router-link></div>
+      <div class="auth-switch">En cambio... <router-link :to="{name:'inicio'}">Iniciar Sesión</router-link></div>
     </div>
     <div class="auth-side"></div>
   </div>
@@ -55,8 +55,10 @@ export default {
 
       this.cargando = true;
       try {
-        await apiClient.post('/usuarios/registro', this.form);
-        await this.$router.push({ name: 'login' });
+        const response = await apiClient.post('/usuarios/registro', this.form);
+        localStorage.setItem('auth_token', response.data.token);
+        localStorage.setItem('auth_user', JSON.stringify(response.data.data));
+        await this.$router.push({ name: 'inicio' });
       } catch (error) {
         const errores = error.response?.data?.errors;
         this.error = errores
