@@ -14,17 +14,6 @@
   </template>
 
 
-
-
-
-
-
-
-
-
-
-
-
 <script>
 import { useCarritoStore } from './stores/carrito.js';
 import CartDrawer from './components/CartDrawer.vue';

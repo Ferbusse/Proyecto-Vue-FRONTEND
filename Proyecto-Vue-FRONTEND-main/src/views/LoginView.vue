@@ -39,6 +39,7 @@ export default {
       this.error = '';
       this.cargando = true;
       try {
+        // BACKEND: autentica al usuario y recibe su token y sus datos.
         const response = await apiClient.post('/usuarios/login', this.form);
         localStorage.setItem('auth_token', response.data.token);
         localStorage.setItem('auth_user', JSON.stringify(response.data.data));

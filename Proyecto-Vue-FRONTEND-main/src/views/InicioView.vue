@@ -3,7 +3,7 @@
     <store-header></store-header>
     <banner-slider></banner-slider>
     <!-- MARCADOR: Prueba de datos - eliminar todo el bloque DatosLista si no se usa -->
-    <datos-lista></datos-lista>
+  <!-- <datos-lista></datos-lista> -->
     <!-- FIN MARCADOR -->
     <div class="quick-links">
       <button class="tile" @click="$router.push({name:'categoria'})">CATEGORIA<br>PRODUCTO</button>

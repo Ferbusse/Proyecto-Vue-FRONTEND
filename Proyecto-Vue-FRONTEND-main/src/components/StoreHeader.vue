@@ -123,6 +123,7 @@ export default {
   async mounted() {
     try {
       // pedimos a laravel los datos del usuario logueado
+      // BACKEND: obtiene el usuario autenticado para mostrarlo en el encabezado.
       const response = await api.get('/user');
       this.usuario = response.data; // guardamos el nombre, correo, etc
     } catch (error) {

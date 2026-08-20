@@ -28,6 +28,7 @@ export default {
     },
     async mounted(){
         try {
+            // BACKEND: obtiene los datos del usuario autenticado.
             const response = await api.get('/user');
             this.usuario = response.data;
         } catch (error) {
@@ -40,6 +41,7 @@ export default {
         },
         async cerrarSesion() {
             try {
+                // BACKEND: cierra la sesión del usuario en el servidor.
                 await api.post('/logout');
                 this.$router.push({ name: 'login' });
                 // Recargar la página para limpiar el estado de la aplicación
