@@ -14,7 +14,11 @@
     </div>
     <div class="account">
       <div class="user-icon">👤</div>
-      <div class="links">
+      <!-- si el usuario esta logueado, mostramos su nombre y el enlace al perfil -->
+      <div v-if="usuario" class="user-profile-link">
+        <router-link :to="{name:'perfil'}">{{ usuario.name }}</router-link>
+      </div>
+      <div v-else class="links">
         <router-link :to="{name:'login'}">Iniciar sesión</router-link>
         <router-link :to="{name:'registro'}">Registrarse</router-link>
       </div>
@@ -61,6 +65,8 @@
 import logo from '../assets/logo.png';
 import { CATALOGO, formatearPrecio } from '../catalog.js';
 import { useCarritoStore } from '../stores/carrito.js';
+import api from '../Api/api.js';
+import { esSesionDemo, obtenerUsuarioDemo } from '../Api/demoAuth.js';
 
 // Grupos de subcategorías genéricos, reutilizados por varias categorías
 // (todavía no hay taxonomía real definida).
@@ -80,6 +86,7 @@ export default {
       logoUrl: logo,
       busquedaAbierta: false,
       categoriasAbiertas: false,
+      usuario: null, // acá guardamos la información del usuario logueado
       resultadosBusqueda: [CATALOGO[2], CATALOGO[7]],
       // Nombres todavía sin definir — placeholders genéricos hasta decidir
       // la taxonomía real de categorías. Ícono genérico (igual para todas)
@@ -110,6 +117,23 @@ export default {
   computed: {
     categoriaActivaData() {
       return this.categoriasMenu.find(c => c.id === this.categoriaActiva);
+    }
+  },
+  async mounted() {
+    // si es la sesión de prueba, no hace falta backend: usamos el
+    // usuario demo directo
+    if (esSesionDemo()) {
+      this.usuario = obtenerUsuarioDemo();
+      return;
+    }
+    try {
+      // le preguntamos al backend los datos del usuario logueado
+      // (si no hay token o no es válido, esto tira error y usuario
+      // se queda en null — mostramos "Iniciar sesión / Registrarse")
+      const response = await api.get('/user');
+      this.usuario = response.data;
+    } catch (error) {
+      this.usuario = null;
     }
   },
   methods: {

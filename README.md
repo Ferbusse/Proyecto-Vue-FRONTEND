@@ -72,19 +72,7 @@ zona-movil-vue/
             └── AdminAnaliticasView.vue
 ```
 
-## Dónde vive cada cosa ahora
-
-- **Navegación**: antes era `estado.pantalla` a mano; ahora son rutas reales
-  (`this.$router.push(...)` o `<router-link>`). El botón "atrás" del navegador
-  ya funciona, y cada producto tiene su propia URL (`/producto/p3`).
-- **Carrito y pago**: antes vivían en `App.vue` con `provide()`/`inject()`;
-  ahora es el store de Pinia `useCarritoStore()` en `src/stores/carrito.js`.
-  Cualquier componente lo importa y lo usa directo, sin pasarlo a mano.
-- **Favorito / mostrar contraseña / filtros de categoría**: se quedaron como
-  estado local de cada vista (no van en Pinia) porque son cosas que solo le
-  importan a esa pantalla puntual — es el patrón recomendado: estado
-  compartido → Pinia, estado de una sola pantalla → `data()` local.
-
+##
 ## Build para producción
 
 ```bash
