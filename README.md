@@ -72,7 +72,39 @@ zona-movil-vue/
             └── AdminAnaliticasView.vue
 ```
 
-##
+## Dónde vive cada cosa ahora
+
+- **Navegación**: antes era `estado.pantalla` a mano; ahora son rutas reales
+  (`this.$router.push(...)` o `<router-link>`). El botón "atrás" del navegador
+  ya funciona, y cada producto tiene su propia URL (`/producto/p3`).
+- **Carrito y pago**: antes vivían en `App.vue` con `provide()`/`inject()`;
+  ahora es el store de Pinia `useCarritoStore()` en `src/stores/carrito.js`.
+  Cualquier componente lo importa y lo usa directo, sin pasarlo a mano.
+- **Favorito / mostrar contraseña / filtros de categoría**: se quedaron como
+  estado local de cada vista (no van en Pinia) porque son cosas que solo le
+  importan a esa pantalla puntual — es el patrón recomendado: estado
+  compartido → Pinia, estado de una sola pantalla → `data()` local.
+- **Login / Registro / Perfil**: ya están conectados a un backend real vía
+  `src/Api/api.js` (axios), que espera un backend **Laravel** corriendo en
+  `http://localhost:8000/api`. El token se guarda en `localStorage` y se
+  manda solo en cada pedido. `StoreHeader.vue` chequea al montar si hay un
+  usuario logueado (`GET /user`) y muestra su nombre en vez de "Iniciar
+  sesión / Registrarse" si lo hay.
+
+## Backend
+
+Este repo asume un backend Laravel corriendo aparte en el puerto 8000, con
+al menos estas rutas:
+
+- `POST /api/usuarios/login`
+- `POST /api/usuarios/registro`
+- `GET /api/user`
+- `POST /api/logout`
+
+Si el equipo terminó usando otra cosa (Express, etc.), hay que actualizar
+`src/Api/api.js` (la `baseURL`) y los nombres de ruta en `LoginView.vue`,
+`RegistroView.vue` y `PerfilView.vue` para que coincidan.
+
 ## Build para producción
 
 ```bash

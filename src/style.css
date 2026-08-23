@@ -170,7 +170,27 @@
   .pd-desc h4{color:#333;}
   .pd-desc p{color:#555; line-height:1.6; max-width:700px;}
   .pd-related h4{color:var(--azul); font-size:17px; margin-top:30px;}
-  .toast{position:fixed; bottom:24px; right:24px; background:var(--azul); color:#fff; padding:14px 22px; border-radius:4px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .3s, transform .3s; transform:translateY(10px); z-index:200;}
+  .toast{position:fixed; bottom:104px; right:24px; background:var(--azul); color:#fff; padding:14px 22px; border-radius:4px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .3s, transform .3s; transform:translateY(10px); z-index:200;}
+
+  /* ===== BOTÓN FLOTANTE DE REDES (whatsapp / instagram) ===== */
+  .fab-social{position:fixed; bottom:24px; right:24px; z-index:210; display:flex; flex-direction:column; align-items:center; gap:12px;}
+  .fab-social-links{display:flex; flex-direction:column; gap:12px; opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .18s ease, transform .18s ease;}
+  .fab-social:hover .fab-social-links,
+  .fab-social:focus-within .fab-social-links,
+  .fab-social.open .fab-social-links{opacity:1; transform:translateY(0); pointer-events:auto;}
+  .fab-icon{width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 4px 12px rgba(0,0,0,.22);}
+  .fab-icon svg{width:24px; height:24px;}
+  .fab-whatsapp{background:#25D366;}
+  .fab-whatsapp:hover{background:#1fb455;}
+  .fab-instagram{background:radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);}
+  .fab-main{width:56px; height:56px; border-radius:50%; background:var(--azul); color:#fff; border:none; box-shadow:0 4px 14px rgba(20,32,140,.4); display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .fab-main svg{width:26px; height:26px;}
+  .fab-main:hover{background:var(--azul-oscuro);}
+  .fab-icon:focus-visible, .fab-main:focus-visible{outline:3px solid #fff; outline-offset:0; box-shadow:0 0 0 5px var(--azul);}
+  @media(max-width:640px){
+    .fab-social{bottom:16px; right:16px;}
+    .toast{bottom:92px; right:16px; left:16px; text-align:center;}
+  }
   .toast.show{opacity:1; transform:translateY(0);}
 
   /* ===== PANTALLA DEL CARRITO (sin usar) ===== */
