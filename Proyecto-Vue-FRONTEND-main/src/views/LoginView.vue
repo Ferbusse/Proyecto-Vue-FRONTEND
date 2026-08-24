@@ -23,6 +23,7 @@
 
 <script>
 import apiClient from '../Api/api.js';
+import { intentarLoginDemo } from '../Api/demoAuth.js';
 
 export default {
   name: 'LoginView',
@@ -37,9 +38,18 @@ export default {
   methods: {
     async iniciarSesion() {
       this.error = '';
+
+      // Si lo que escribió coincide con la cuenta de prueba (ver
+      // src/Api/demoAuth.js), entramos directo sin tocar el backend.
+      // No hay ningún botón visible para esto a propósito — solo
+      // funciona si conocés el email/contraseña.
+      if (intentarLoginDemo(this.form.email, this.form.password)) {
+        await this.$router.push({ name: 'inicio' });
+        return;
+      }
+
       this.cargando = true;
       try {
-        // BACKEND: autentica al usuario y recibe su token y sus datos.
         const response = await apiClient.post('/usuarios/login', this.form);
         localStorage.setItem('auth_token', response.data.token);
         localStorage.setItem('auth_user', JSON.stringify(response.data.data));

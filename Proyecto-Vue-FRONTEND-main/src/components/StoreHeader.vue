@@ -16,8 +16,7 @@
       <div class="user-icon">👤</div>
       <!-- si el usuario esta logueado, mostramos su nombre y el enlace al perfil -->
       <div v-if="usuario" class="user-profile-link">
-        <!-- al tocar esto, lo manda a la vista de perfil -->
-        <router-link :to="{ name: 'perfil'}">{{ usuario.name }}</router-link>
+        <router-link :to="{name:'perfil'}">{{ usuario.name }}</router-link>
       </div>
       <div v-else class="links">
         <router-link :to="{name:'login'}">Iniciar sesión</router-link>
@@ -26,7 +25,6 @@
     </div>
   </div>
   <div class="navbar">
-
     <div class="categorias-wrap" :class="{open: categoriasAbiertas}">
       <button class="categorias-btn" @click="categoriasAbiertas = !categoriasAbiertas"><span class="bars">≡</span> CATEGORÍAS ▾</button>
       <div class="mega-menu">
@@ -64,10 +62,11 @@
 </template>
 
 <script>
-import api from '@/Api/api.js';
 import logo from '../assets/logo.png';
 import { CATALOGO, formatearPrecio } from '../catalog.js';
 import { useCarritoStore } from '../stores/carrito.js';
+import api from '../Api/api.js';
+import { esSesionDemo, obtenerUsuarioDemo } from '../Api/demoAuth.js';
 
 // Grupos de subcategorías genéricos, reutilizados por varias categorías
 // (todavía no hay taxonomía real definida).
@@ -87,7 +86,7 @@ export default {
       logoUrl: logo,
       busquedaAbierta: false,
       categoriasAbiertas: false,
-      usuario: null, // aqui guardaremos la información del usuario logueado
+      usuario: null, // acá guardamos la información del usuario logueado
       resultadosBusqueda: [CATALOGO[2], CATALOGO[7]],
       // Nombres todavía sin definir — placeholders genéricos hasta decidir
       // la taxonomía real de categorías. Ícono genérico (igual para todas)
@@ -121,13 +120,20 @@ export default {
     }
   },
   async mounted() {
+    // si es la sesión de prueba, no hace falta backend: usamos el
+    // usuario demo directo
+    if (esSesionDemo()) {
+      this.usuario = obtenerUsuarioDemo();
+      return;
+    }
     try {
-      // pedimos a laravel los datos del usuario logueado
-      // BACKEND: obtiene el usuario autenticado para mostrarlo en el encabezado.
+      // le preguntamos al backend los datos del usuario logueado
+      // (si no hay token o no es válido, esto tira error y usuario
+      // se queda en null — mostramos "Iniciar sesión / Registrarse")
       const response = await api.get('/user');
-      this.usuario = response.data; // guardamos el nombre, correo, etc
+      this.usuario = response.data;
     } catch (error) {
-      console.log('No hay usuario logueado:');
+      this.usuario = null;
     }
   },
   methods: {

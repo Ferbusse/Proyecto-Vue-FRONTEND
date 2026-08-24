@@ -1,5 +1,4 @@
 <template>
- 
   <router-view v-slot="{ Component }">
     <transition name="route-fade" mode="out-in">
       <component :is="Component" />
@@ -10,9 +9,7 @@
   <payment-modals></payment-modals>
 
   <div class="toast" :class="{show: carrito.mostrarAvisoGlobal}">¡Pago realizado con éxito!</div>
-
-  </template>
-
+</template>
 
 <script>
 import { useCarritoStore } from './stores/carrito.js';

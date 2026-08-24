@@ -55,7 +55,6 @@ export default {
 
       this.cargando = true;
       try {
-        // BACKEND: registra al usuario y recibe su token y sus datos.
         const response = await apiClient.post('/usuarios/registro', this.form);
         localStorage.setItem('auth_token', response.data.token);
         localStorage.setItem('auth_user', JSON.stringify(response.data.data));
