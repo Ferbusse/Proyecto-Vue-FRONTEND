@@ -1,15 +1,16 @@
 // Catálogo de productos de ejemplo (precios en pesos uruguayos).
+// "icono" es temporal — un ícono genérico hasta que haya fotos reales.
 export const CATALOGO = [
-  { id: 'p1',  name: 'Funda de Silicona',            price: 390 },
-  { id: 'p2',  name: 'Cargador Rápido 20W',          price: 890 },
-  { id: 'p3',  name: 'Auriculares Inalámbricos i12', price: 1590 },
-  { id: 'p4',  name: 'Cable USB-C 2M',               price: 350 },
-  { id: 'p5',  name: 'Protector de Pantalla',        price: 290 },
-  { id: 'p6',  name: 'Power Bank 10000mAh',          price: 1990 },
-  { id: 'p7',  name: 'Soporte para Auto',            price: 650 },
-  { id: 'p8',  name: 'Parlante Bluetooth Mini',      price: 2190 },
-  { id: 'p9',  name: 'Mouse Inalámbrico',            price: 790 },
-  { id: 'p10', name: 'Teclado Bluetooth',            price: 1450 },
+  { id: 'p1',  name: 'Funda de Silicona',            price: 390,  icono: '📱' },
+  { id: 'p2',  name: 'Cargador Rápido 20W',          price: 890,  icono: '🔌' },
+  { id: 'p3',  name: 'Auriculares Inalámbricos i12', price: 1590, icono: '🎧' },
+  { id: 'p4',  name: 'Cable USB-C 2M',               price: 350,  icono: '🔗' },
+  { id: 'p5',  name: 'Protector de Pantalla',        price: 290,  icono: '🛡️' },
+  { id: 'p6',  name: 'Power Bank 10000mAh',          price: 1990, icono: '🔋' },
+  { id: 'p7',  name: 'Soporte para Auto',            price: 650,  icono: '🚗' },
+  { id: 'p8',  name: 'Parlante Bluetooth Mini',      price: 2190, icono: '🔊' },
+  { id: 'p9',  name: 'Mouse Inalámbrico',            price: 790,  icono: '🖱️' },
+  { id: 'p10', name: 'Teclado Bluetooth',            price: 1450, icono: '⌨️' },
   { id: 'p11', name: 'Smartwatch Deportivo',         price: 3490 },
   { id: 'p12', name: 'Memoria MicroSD 64GB',         price: 690 }
 ];

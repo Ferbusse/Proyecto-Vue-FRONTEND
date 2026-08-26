@@ -2,7 +2,9 @@
   <div class="view">
     <store-header></store-header>
     <div class="product-detail">
-      <div class="pd-image img-placeholder"></div>
+      <div class="pd-image img-placeholder">
+        <span v-if="producto.icono" class="product-icono product-icono-grande" aria-hidden="true">{{ producto.icono }}</span>
+      </div>
       <div class="pd-info">
         <h1>{{ producto.name }}</h1>
         <h4 style="color:var(--azul); font-size:24px; font-weight:800; margin:4px 0 14px;">{{ formatearPrecio(producto.price) }}</h4>
