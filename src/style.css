@@ -217,7 +217,8 @@
   .form-row{display:flex; gap:24px; margin-bottom:20px; flex-wrap:wrap;}
   .form-group{flex:1; min-width:180px;}
   .form-group label{display:block; color:var(--azul); font-weight:700; margin-bottom:6px; font-size:14px;}
-  .form-group input{width:100%; padding:10px 12px; border:1px solid #999; border-radius:2px; font-size:14px;}
+  .form-group input, .form-group select, .form-group textarea{width:100%; padding:10px 12px; border:1px solid #999; border-radius:2px; font-size:14px; font-family:inherit;}
+  .form-group textarea{resize:vertical;}
   .checkout-summary{width:420px; flex-shrink:0;}
   .summary-table{border:1px solid var(--azul);}
   .summary-row{display:flex; border-bottom:1px solid var(--linea-naranja);}
@@ -265,6 +266,7 @@
   .bank-transfer.selected{outline:2px solid var(--azul); outline-offset:2px;}
   .modal-btn{display:block; width:100%; background:var(--azul); color:#fff; border:none; padding:16px; font-weight:800; font-size:18px; border-radius:3px; margin-top:26px; box-shadow:0 3px 0 var(--azul-oscuro);}
   .modal-btn:active{transform:translateY(2px); box-shadow:none;}
+  .modal-btn:disabled{opacity:.6; cursor:not-allowed;}
   .modal-help{display:block; text-align:center; margin:16px auto 0; background:#dfe2f7; color:var(--azul); font-weight:700; border:none; padding:8px 14px; border-radius:3px;}
   .card-form-row{display:flex; gap:16px; margin-bottom:16px;}
   .card-form-row .fg{flex:1;}
@@ -380,10 +382,13 @@
   .bar-chart .bar-label{margin-top:6px; font-size:12px; color:#333;}
 
   .admin-table-wrap{border:2px solid var(--azul); border-radius:2px;}
-  .admin-table-tools{display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:2px solid var(--azul);}
+  .admin-table-tools{display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:2px solid var(--azul); flex-wrap:wrap; gap:12px;}
   .admin-table-tools .icons{display:flex; gap:16px; font-size:20px; color:#222;}
-  .admin-table-tools .icons button{background:none;border:none;font-size:20px;}
-  .admin-table-tools .select-all{color:var(--azul); font-size:13px; display:flex; align-items:center; gap:6px;}
+  .admin-table-tools .icons button{background:none;border:none;font-size:20px; cursor:pointer;}
+  .admin-table-tools .icons button:disabled{opacity:.35; cursor:not-allowed;}
+  .admin-table-tools .select-all{color:var(--azul); font-size:13px; display:flex; align-items:center; gap:10px;}
+  .admin-table-tools .select-all label{display:flex; align-items:center; gap:6px; cursor:pointer;}
+  .admin-table-tools .select-count{color:#666; font-weight:600;}
   .admin-row{display:flex; align-items:center; padding:14px 20px; border-bottom:1px solid var(--linea-naranja); gap:10px;}
   .admin-row:last-child{border-bottom:none;}
   .admin-row a.administrar{color:var(--azul); font-size:18px; text-decoration:none; width:140px; flex-shrink:0;}
@@ -393,6 +398,9 @@
   .admin-header-row{display:flex; align-items:center; padding:10px 20px; border-bottom:2px solid var(--azul); font-size:12px; color:#333; font-weight:700; gap:10px;}
   .admin-header-row .col{flex:1;}
   .admin-header-row .administrar-h{width:140px; flex-shrink:0;}
+
+  /* ===== "SIN PRODUCTOS" / ERROR (listado de productos) ===== */
+  .producto-error, .producto-vacio{padding:18px 20px; color:var(--azul);}
 
   .stat-cards{display:flex; gap:18px; flex-wrap:wrap; margin-bottom:20px;}
   .stat-card{flex:1; min-width:200px; border:1px solid #ddd; border-radius:10px; padding:16px 20px;}
