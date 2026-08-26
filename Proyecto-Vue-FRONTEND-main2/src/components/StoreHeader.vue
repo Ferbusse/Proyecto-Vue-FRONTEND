@@ -8,7 +8,7 @@
       </div>
       <div class="search-results">
         <div class="search-result-item" v-for="producto in resultadosBusqueda" :key="producto.id" @click="$router.push({name:'producto', params:{id: producto.id}})">
-          <span class="name">{{ producto.name }}</span><span class="price">{{ formatearPrecio(producto.price) }}</span><div class="thumb img-placeholder"></div>
+          <span class="name">{{ producto.name }}</span><span class="price">{{ formatearPrecio(producto.price) }}</span><div class="thumb img-placeholder"><span v-if="producto.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ producto.icono }}</span></div>
         </div>
       </div>
     </div>
@@ -56,7 +56,7 @@
       <a class="cart-link" @click="carrito.abrir()">
         <div class="cart-icon">🛒<span class="badge">{{ carrito.cantidad }}</span></div>CARRITO<br><span>{{ carrito.totalFormateado }}</span>
       </a>
-      <a class="contact">Contacto 📞</a>
+      <!--<a class="contact">Contacto 📞</a>-->
     </div>
   </div>
 </template>

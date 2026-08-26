@@ -37,6 +37,11 @@
     display:flex; align-items:center; justify-content:center;
     color:var(--azul); font-weight:700; text-align:center;
   }
+  /* Ícono temporal (emoji) que reemplaza la foto real del producto
+     mientras no la tenemos. Tres tamaños según dónde aparece. */
+  .product-icono{font-size:38px; line-height:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,.15));}
+  .product-icono-grande{font-size:96px;}
+  .product-icono-chico{font-size:22px;}
 
   /* ===== ENCABEZADO DE LA TIENDA ===== */
   .topbar{
@@ -170,7 +175,27 @@
   .pd-desc h4{color:#333;}
   .pd-desc p{color:#555; line-height:1.6; max-width:700px;}
   .pd-related h4{color:var(--azul); font-size:17px; margin-top:30px;}
-  .toast{position:fixed; bottom:24px; right:24px; background:var(--azul); color:#fff; padding:14px 22px; border-radius:4px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .3s, transform .3s; transform:translateY(10px); z-index:200;}
+  .toast{position:fixed; bottom:104px; right:24px; background:var(--azul); color:#fff; padding:14px 22px; border-radius:4px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .3s, transform .3s; transform:translateY(10px); z-index:200;}
+
+  /* ===== BOTÓN FLOTANTE DE REDES (whatsapp / instagram) ===== */
+  .fab-social{position:fixed; bottom:24px; right:24px; z-index:210; display:flex; flex-direction:column; align-items:center; gap:12px;}
+  .fab-social-links{display:flex; flex-direction:column; gap:12px; opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .18s ease, transform .18s ease;}
+  .fab-social:hover .fab-social-links,
+  .fab-social:focus-within .fab-social-links,
+  .fab-social.open .fab-social-links{opacity:1; transform:translateY(0); pointer-events:auto;}
+  .fab-icon{width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 4px 12px rgba(0,0,0,.22);}
+  .fab-icon svg{width:24px; height:24px;}
+  .fab-whatsapp{background:#25D366;}
+  .fab-whatsapp:hover{background:#1fb455;}
+  .fab-instagram{background:radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);}
+  .fab-main{width:56px; height:56px; border-radius:50%; background:var(--azul); color:#fff; border:none; box-shadow:0 4px 14px rgba(20,32,140,.4); display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .fab-main svg{width:26px; height:26px;}
+  .fab-main:hover{background:var(--azul-oscuro);}
+  .fab-icon:focus-visible, .fab-main:focus-visible{outline:3px solid #fff; outline-offset:0; box-shadow:0 0 0 5px var(--azul);}
+  @media(max-width:640px){
+    .fab-social{bottom:16px; right:16px;}
+    .toast{bottom:92px; right:16px; left:16px; text-align:center;}
+  }
   .toast.show{opacity:1; transform:translateY(0);}
 
   /* ===== PANTALLA DEL CARRITO (sin usar) ===== */
@@ -197,7 +222,8 @@
   .form-row{display:flex; gap:24px; margin-bottom:20px; flex-wrap:wrap;}
   .form-group{flex:1; min-width:180px;}
   .form-group label{display:block; color:var(--azul); font-weight:700; margin-bottom:6px; font-size:14px;}
-  .form-group input{width:100%; padding:10px 12px; border:1px solid #999; border-radius:2px; font-size:14px;}
+  .form-group input, .form-group select, .form-group textarea{width:100%; padding:10px 12px; border:1px solid #999; border-radius:2px; font-size:14px; font-family:inherit;}
+  .form-group textarea{resize:vertical;}
   .checkout-summary{width:420px; flex-shrink:0;}
   .summary-table{border:1px solid var(--azul);}
   .summary-row{display:flex; border-bottom:1px solid var(--linea-naranja);}
@@ -245,6 +271,7 @@
   .bank-transfer.selected{outline:2px solid var(--azul); outline-offset:2px;}
   .modal-btn{display:block; width:100%; background:var(--azul); color:#fff; border:none; padding:16px; font-weight:800; font-size:18px; border-radius:3px; margin-top:26px; box-shadow:0 3px 0 var(--azul-oscuro);}
   .modal-btn:active{transform:translateY(2px); box-shadow:none;}
+  .modal-btn:disabled{opacity:.6; cursor:not-allowed;}
   .modal-help{display:block; text-align:center; margin:16px auto 0; background:#dfe2f7; color:var(--azul); font-weight:700; border:none; padding:8px 14px; border-radius:3px;}
   .card-form-row{display:flex; gap:16px; margin-bottom:16px;}
   .card-form-row .fg{flex:1;}
@@ -360,10 +387,13 @@
   .bar-chart .bar-label{margin-top:6px; font-size:12px; color:#333;}
 
   .admin-table-wrap{border:2px solid var(--azul); border-radius:2px;}
-  .admin-table-tools{display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:2px solid var(--azul);}
+  .admin-table-tools{display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:2px solid var(--azul); flex-wrap:wrap; gap:12px;}
   .admin-table-tools .icons{display:flex; gap:16px; font-size:20px; color:#222;}
-  .admin-table-tools .icons button{background:none;border:none;font-size:20px;}
-  .admin-table-tools .select-all{color:var(--azul); font-size:13px; display:flex; align-items:center; gap:6px;}
+  .admin-table-tools .icons button{background:none;border:none;font-size:20px; cursor:pointer;}
+  .admin-table-tools .icons button:disabled{opacity:.35; cursor:not-allowed;}
+  .admin-table-tools .select-all{color:var(--azul); font-size:13px; display:flex; align-items:center; gap:10px;}
+  .admin-table-tools .select-all label{display:flex; align-items:center; gap:6px; cursor:pointer;}
+  .admin-table-tools .select-count{color:#666; font-weight:600;}
   .admin-row{display:flex; align-items:center; padding:14px 20px; border-bottom:1px solid var(--linea-naranja); gap:10px;}
   .admin-row:last-child{border-bottom:none;}
   .admin-row a.administrar{color:var(--azul); font-size:18px; text-decoration:none; width:140px; flex-shrink:0;}
@@ -373,17 +403,9 @@
   .admin-header-row{display:flex; align-items:center; padding:10px 20px; border-bottom:2px solid var(--azul); font-size:12px; color:#333; font-weight:700; gap:10px;}
   .admin-header-row .col{flex:1;}
   .admin-header-row .administrar-h{width:140px; flex-shrink:0;}
-  /* AÑADIDO: estilos del formulario integrado en el listado de productos. */
-  .producto-form{padding:16px 20px; border-bottom:2px solid var(--azul);}
-  .producto-form-grid{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px;}
-  .producto-form input,.producto-form select,.producto-form textarea{width:100%; box-sizing:border-box; padding:9px; border:1px solid #c9c9c9; font:inherit;}
-  .producto-form textarea{grid-column:1 / -1; min-height:70px; resize:vertical;}
-  .producto-form-actions{display:flex; gap:10px; margin-top:12px;}
-  .producto-form-actions button{padding:8px 14px; border:1px solid var(--azul); background:white; color:var(--azul); cursor:pointer;}
-  .producto-form-actions button[type=submit]{background:var(--azul); color:white;}
-  .producto-form-actions button:disabled{opacity:.6; cursor:wait;}
-  .producto-error,.producto-vacio{padding:18px 20px; color:var(--azul);}
-  @media (max-width:700px){.producto-form-grid{grid-template-columns:1fr;}.producto-form textarea{grid-column:auto;}}
+
+  /* ===== "SIN PRODUCTOS" / ERROR (listado de productos) ===== */
+  .producto-error, .producto-vacio{padding:18px 20px; color:var(--azul);}
 
   .stat-cards{display:flex; gap:18px; flex-wrap:wrap; margin-bottom:20px;}
   .stat-card{flex:1; min-width:200px; border:1px solid #ddd; border-radius:10px; padding:16px 20px;}

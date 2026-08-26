@@ -21,7 +21,9 @@
             <div class="qty">{{linea.qty}}</div>
             <div class="details">
               <div><div class="product-name" style="text-align:left;">{{linea.product.name}}</div><div style="color:var(--azul);">{{formatearPrecio(linea.product.price)}}</div></div>
-              <div class="thumb img-placeholder"></div>
+              <div class="thumb img-placeholder">
+                <span v-if="linea.product.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ linea.product.icono }}</span>
+              </div>
             </div>
           </div>
         </div>

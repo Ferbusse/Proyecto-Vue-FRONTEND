@@ -7,6 +7,7 @@
 
   <cart-drawer></cart-drawer>
   <payment-modals></payment-modals>
+  <floating-social></floating-social>
 
   <div class="toast" :class="{show: carrito.mostrarAvisoGlobal}">¡Pago realizado con éxito!</div>
 </template>
@@ -15,10 +16,11 @@
 import { useCarritoStore } from './stores/carrito.js';
 import CartDrawer from './components/CartDrawer.vue';
 import PaymentModals from './components/PaymentModals.vue';
+import FloatingSocial from './components/FloatingSocial.vue';
 
 export default {
   name: 'App',
-  components: { CartDrawer, PaymentModals },
+  components: { CartDrawer, PaymentModals, FloatingSocial },
   data() {
     return { carrito: useCarritoStore() };
   }
