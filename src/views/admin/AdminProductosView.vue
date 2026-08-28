@@ -40,10 +40,12 @@
           <div class="admin-row" v-for="producto in productos" :key="producto.id">
             <a class="administrar" @click="abrirParaEditar(producto)">Administrar</a>
             <div class="col">{{ producto.nombre }}<br>{{ formatearPrecio(producto.precio_venta) }}</div>
-            <div class="col">{{ producto.categorias?.[0]?.nombre || 'Sin categoría' }}</div>
+            <div class="col">{{ obtenerCategoriaNombre(producto) }}</div>
             <div class="col">{{ producto.stock }}</div>
             <div class="col">{{ producto.id }}</div>
-            <div class="thumb img-placeholder"></div>
+            <div class="thumb img-placeholder">
+              <img v-if="obtenerUrlImagen(producto)" :src="obtenerUrlImagen(producto)" :alt="producto.nombre">
+            </div>
             <input class="chk" type="checkbox" :value="producto.id" v-model="seleccionados" :aria-label="'Seleccionar ' + producto.nombre">
           </div>
 
@@ -66,15 +68,58 @@
               <input id="prod-nombre" v-model="formulario.nombre" type="text" required>
             </div>
           </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="prod-imagen">Imagen del producto</label>
+              <div class="imagen-picker">
+                <div class="imagen-preview">
+                  <img v-if="previewImagen" :src="previewImagen" alt="">
+                  <span v-else aria-hidden="true">📷</span>
+                </div>
+                <div class="imagen-picker-controles">
+                  <input id="prod-imagen" type="file" accept="image/*" @change="alElegirImagen">
+                  <button v-if="previewImagen" type="button" class="imagen-quitar" @click="quitarImagen">Quitar imagen</button>
+                  <p class="imagen-nota">JPG o PNG. Si no elegís nada, se muestra un ícono genérico.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-row">
             <div class="form-group">
               <label for="prod-categoria">Categoría</label>
-              <select id="prod-categoria" v-model="formulario.categoria_id" required>
-                <option :value="null" disabled>Seleccionar categoría</option>
-                <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{ categoria.nombre }}</option>
-              </select>
+              <div class="categoria-picker">
+                <select id="prod-categoria" v-model="formulario.categoria_id" required>
+                  <option :value="null" disabled>Seleccionar categoría</option>
+                  <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{ categoria.nombre }}</option>
+                </select>
+                <button
+                  type="button"
+                  class="categoria-nueva-btn"
+                  title="Agregar categoría nueva"
+                  aria-label="Agregar categoría nueva"
+                  @click="mostrarNuevaCategoria = !mostrarNuevaCategoria"
+                >＋</button>
+              </div>
+
+              <!-- Mini formulario para crear una categoría sin salir de acá -->
+              <div v-if="mostrarNuevaCategoria" class="categoria-nueva">
+                <input
+                  v-model="nombreNuevaCategoria"
+                  type="text"
+                  placeholder="Nombre de la categoría nueva"
+                  @keydown.enter.prevent="crearCategoria"
+                >
+                <button type="button" @click="crearCategoria" :disabled="creandoCategoria">
+                  {{ creandoCategoria ? 'Creando...' : 'Agregar' }}
+                </button>
+                <button type="button" class="categoria-nueva-cancelar" @click="cancelarNuevaCategoria">Cancelar</button>
+              </div>
+              <p v-if="errorCategoria" class="auth-error">{{ errorCategoria }}</p>
             </div>
           </div>
+
           <div class="form-row">
             <div class="form-group">
               <label for="prod-precio-venta">Precio de venta</label>
@@ -116,6 +161,7 @@ import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
 import { formatearPrecio } from '../../catalog.js';
+import { obtenerUrlImagen } from '../../stores/productos.js';
 
 const PRODUCTO_VACIO = {
   nombre: '',
@@ -126,6 +172,20 @@ const PRODUCTO_VACIO = {
   codigo_barras: '',
   categoria_id: null
 };
+
+// El backend a veces manda la categoría de un producto de formas
+// distintas según el endpoint (categoria_id suelto, categoria: {...},
+// o categorias: [...]). Estas dos funciones prueban todas las formas
+// posibles, así "editar" no se rompe si cambia el formato.
+function obtenerCategoriaIdDe(producto) {
+  if (producto.categoria_id != null) return producto.categoria_id;
+  if (producto.categoria?.id != null) return producto.categoria.id;
+  if (producto.categorias?.[0]?.id != null) return producto.categorias[0].id;
+  return null;
+}
+function obtenerCategoriaNombreDe(producto) {
+  return producto.categoria?.nombre || producto.categorias?.[0]?.nombre || null;
+}
 
 export default {
   name: 'AdminProductosView',
@@ -143,7 +203,18 @@ export default {
       editandoId: null,    // null = creando uno nuevo; si no, id del que se edita
       guardando: false,
       errorFormulario: '',
-      formulario: { ...PRODUCTO_VACIO }
+      formulario: { ...PRODUCTO_VACIO },
+
+      // -- imagen del producto --
+      archivoImagen: null,     // el File elegido (null = no se tocó)
+      previewImagen: null,     // URL para mostrar la vista previa
+      sacarImagenExistente: false, // true = el admin quitó la imagen que ya tenía
+
+      // -- categoría nueva, desde el mismo formulario de producto --
+      mostrarNuevaCategoria: false,
+      nombreNuevaCategoria: '',
+      creandoCategoria: false,
+      errorCategoria: ''
     };
   },
   computed: {
@@ -163,6 +234,10 @@ export default {
   },
   methods: {
     formatearPrecio,
+    obtenerUrlImagen,
+    obtenerCategoriaNombre(producto) {
+      return obtenerCategoriaNombreDe(producto) || 'Sin categoría';
+    },
 
     async cargarProductos() {
       this.error = '';
@@ -186,11 +261,62 @@ export default {
       }
     },
 
-    // -- modal: crear / editar --
+    // -- imagen --
+    alElegirImagen(evento) {
+      const archivo = evento.target.files?.[0];
+      if (!archivo) return;
+      this.archivoImagen = archivo;
+      this.sacarImagenExistente = false;
+      if (this.previewImagen) URL.revokeObjectURL(this.previewImagen);
+      this.previewImagen = URL.createObjectURL(archivo);
+    },
+    quitarImagen() {
+      this.archivoImagen = null;
+      this.sacarImagenExistente = true;
+      if (this.previewImagen) URL.revokeObjectURL(this.previewImagen);
+      this.previewImagen = null;
+    },
+    limpiarImagenDelFormulario() {
+      if (this.previewImagen) URL.revokeObjectURL(this.previewImagen);
+      this.archivoImagen = null;
+      this.previewImagen = null;
+      this.sacarImagenExistente = false;
+    },
+
+    // -- categoría nueva --
+    cancelarNuevaCategoria() {
+      this.mostrarNuevaCategoria = false;
+      this.nombreNuevaCategoria = '';
+      this.errorCategoria = '';
+    },
+    async crearCategoria() {
+      const nombre = this.nombreNuevaCategoria.trim();
+      if (!nombre) { this.errorCategoria = 'Escribí un nombre para la categoría.'; return; }
+
+      this.creandoCategoria = true;
+      this.errorCategoria = '';
+      try {
+        const response = await api.post('/categorias', { nombre });
+        const nueva = response.data;
+        await this.cargarCategorias();
+        // seleccionamos automáticamente la que se acaba de crear
+        this.formulario.categoria_id = nueva?.id ?? this.categorias.find(c => c.nombre === nombre)?.id ?? null;
+        this.cancelarNuevaCategoria();
+      } catch (requestError) {
+        console.error('Error al crear categoría:', requestError);
+        this.errorCategoria = requestError.response?.data?.message || 'No se pudo crear la categoría.';
+      } finally {
+        this.creandoCategoria = false;
+      }
+    },
+
+    // -- modal: crear / editar producto --
     abrirParaCrear() {
       this.editandoId = null;
       this.errorFormulario = '';
       this.formulario = { ...PRODUCTO_VACIO };
+      this.limpiarImagenDelFormulario();
+      this.cancelarNuevaCategoria();
       this.mostrarFormulario = true;
     },
     abrirParaEditar(producto) {
@@ -203,23 +329,52 @@ export default {
         precio_venta: producto.precio_venta,
         stock: producto.stock,
         codigo_barras: producto.codigo_barras || '',
-        categoria_id: producto.categorias?.[0]?.id ?? null
+        categoria_id: obtenerCategoriaIdDe(producto)
       };
+      this.limpiarImagenDelFormulario();
+      // si el producto ya tiene una foto, la mostramos como vista previa
+      this.previewImagen = obtenerUrlImagen(producto);
+      this.cancelarNuevaCategoria();
       this.mostrarFormulario = true;
     },
     cerrarFormulario() {
       this.mostrarFormulario = false;
+      this.limpiarImagenDelFormulario();
+      this.cancelarNuevaCategoria();
     },
     async guardarProducto() {
       this.guardando = true;
       this.errorFormulario = '';
       try {
+        // Mandamos todo como multipart/form-data (necesario para poder
+        // adjuntar el archivo de imagen). Los campos de texto van igual
+        // que antes, solo cambia cómo se empaquetan.
+        const datos = new FormData();
+        Object.entries(this.formulario).forEach(([campo, valor]) => {
+          datos.append(campo, valor ?? '');
+        });
+        if (this.archivoImagen) {
+          datos.append('imagen', this.archivoImagen);
+        } else if (this.sacarImagenExistente) {
+          datos.append('quitar_imagen', '1');
+        }
+
+        // Ojo: PHP no procesa bien los archivos en pedidos PUT/PATCH
+        // con multipart, así que para editar mandamos un POST con
+        // "_method=PUT" (la forma en que Laravel espera esto), en vez
+        // de un verbo PUT de verdad.
         if (this.editandoId) {
-          await api.put(`/productos/${this.editandoId}`, this.formulario);
+          datos.append('_method', 'PUT');
+          await api.post(`/productos/${this.editandoId}`, datos, {
+            headers: { 'Content-Type': undefined } // dejamos que el navegador arme el boundary del multipart
+          });
         } else {
-          await api.post('/productos', this.formulario);
+          await api.post('/productos', datos, {
+            headers: { 'Content-Type': undefined }
+          });
         }
         this.mostrarFormulario = false;
+        this.limpiarImagenDelFormulario();
         await this.cargarProductos();
       } catch (requestError) {
         console.error('Error al guardar:', requestError);
@@ -259,7 +414,9 @@ export default {
           precio_venta: producto.precio_venta,
           stock: producto.stock,
           codigo_barras: '',
-          categoria_id: producto.categorias?.[0]?.id ?? null
+          categoria_id: obtenerCategoriaIdDe(producto)
+          // la copia sale sin imagen — el admin puede subirle una
+          // propia después si quiere una distinta a la del original.
         })));
         this.seleccionados = [];
         await this.cargarProductos();

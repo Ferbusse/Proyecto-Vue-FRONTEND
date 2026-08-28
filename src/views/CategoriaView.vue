@@ -31,8 +31,9 @@
             <option value="vendidos">Más vendidos</option>
           </select>
         </div>
+        <p v-if="productos.cargando" class="producto-vacio">Cargando productos…</p>
         <div class="cat-grid">
-          <cat-card v-for="producto in itemsGrilla" :key="producto.uid" :product="producto"></cat-card>
+          <cat-card v-for="producto in itemsGrilla" :key="producto.id" :product="producto"></cat-card>
         </div>
         <div class="pagination">
           <button class="arrow-btn">‹</button>
@@ -47,27 +48,31 @@
 <script>
 import StoreHeader from '../components/StoreHeader.vue';
 import CatCard from '../components/CatCard.vue';
-import { CATALOGO } from '../catalog.js';
+import { useProductosStore } from '../stores/productos.js';
 
 export default {
   name: 'CategoriaView',
   components: { StoreHeader, CatCard },
   data() {
     return {
+      productos: useProductosStore(),
       filtroPrecio: 4000,
       ordenarPor: 'menor'
     };
   },
   computed: {
     itemsGrilla() {
-      const out = [];
-      for (let i = 0; i < 16; i++) {
-        const producto = Object.assign({}, CATALOGO[i % CATALOGO.length]);
-        producto.uid = 'g' + i;
-        out.push(producto);
-      }
-      return out;
+      const lista = this.productos.lista.filter(p => p.price <= this.filtroPrecio);
+      const ordenada = [...lista];
+      if (this.ordenarPor === 'menor') ordenada.sort((a, b) => a.price - b.price);
+      if (this.ordenarPor === 'mayor') ordenada.sort((a, b) => b.price - a.price);
+      // "más vendidos" queda igual al orden que trae el backend, todavía
+      // no tenemos ese dato
+      return ordenada;
     }
+  },
+  mounted() {
+    this.productos.cargar();
   }
 };
 </script>

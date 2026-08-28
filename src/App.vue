@@ -7,7 +7,7 @@
 
   <cart-drawer></cart-drawer>
   <payment-modals></payment-modals>
-  <floating-social></floating-social>
+  <floating-social v-if="!enAdmin"></floating-social>
 
   <div class="toast" :class="{show: carrito.mostrarAvisoGlobal}">¡Pago realizado con éxito!</div>
 </template>
@@ -23,6 +23,11 @@ export default {
   components: { CartDrawer, PaymentModals, FloatingSocial },
   data() {
     return { carrito: useCarritoStore() };
+  },
+  computed: {
+    enAdmin() {
+      return this.$route.path.startsWith('/admin');
+    }
   }
 };
 </script>

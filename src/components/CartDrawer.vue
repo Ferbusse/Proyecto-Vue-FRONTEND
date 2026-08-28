@@ -9,7 +9,8 @@
         <div class="cart-drawer-empty" v-if="carrito.lineas.length===0">Tu carrito está vacío</div>
         <div class="cart-drawer-item" v-for="linea in carrito.lineas" :key="linea.product.id">
           <div class="thumb img-placeholder">
-            <span v-if="linea.product.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ linea.product.icono }}</span>
+            <img v-if="linea.product.imagenUrl" :src="linea.product.imagenUrl" :alt="linea.product.name">
+            <span v-else-if="linea.product.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ linea.product.icono }}</span>
           </div>
           <div class="info">
             <div class="name">{{ linea.product.name }}</div>

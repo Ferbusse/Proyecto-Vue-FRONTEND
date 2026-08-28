@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { obtenerProducto, formatearPrecio } from '../catalog.js';
+import { formatearPrecio } from '../catalog.js';
+import { useProductosStore } from './productos.js';
 
 // Store de Pinia: todo lo relacionado al carrito y al flujo de pago
 // (antes vivía como estado global manual en App.vue, compartido con
@@ -25,9 +26,12 @@ export const useCarritoStore = defineStore('carrito', {
 
   getters: {
     // una línea por producto en el carrito, con el producto completo + cantidad
+    // (el producto sale del store de productos, así el carrito siempre
+    // muestra los datos reales, sin importar de dónde vino cada uno)
     lineas(state) {
+      const productos = useProductosStore();
       return Object.keys(state.items).map(id => ({
-        product: obtenerProducto(id),
+        product: productos.obtenerProducto(id),
         qty: state.items[id]
       }));
     },
@@ -35,8 +39,9 @@ export const useCarritoStore = defineStore('carrito', {
       return Object.values(state.items).reduce((suma, qty) => suma + qty, 0);
     },
     total(state) {
+      const productos = useProductosStore();
       return Object.keys(state.items).reduce(
-        (suma, id) => suma + state.items[id] * obtenerProducto(id).price,
+        (suma, id) => suma + state.items[id] * productos.obtenerProducto(id).price,
         0
       );
     },

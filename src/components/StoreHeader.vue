@@ -8,7 +8,7 @@
       </div>
       <div class="search-results">
         <div class="search-result-item" v-for="producto in resultadosBusqueda" :key="producto.id" @click="$router.push({name:'producto', params:{id: producto.id}})">
-          <span class="name">{{ producto.name }}</span><span class="price">{{ formatearPrecio(producto.price) }}</span><div class="thumb img-placeholder"><span v-if="producto.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ producto.icono }}</span></div>
+          <span class="name">{{ producto.name }}</span><span class="price">{{ formatearPrecio(producto.price) }}</span><div class="thumb img-placeholder"><img v-if="producto.imagenUrl" :src="producto.imagenUrl" :alt="producto.name"><span v-else-if="producto.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ producto.icono }}</span></div>
         </div>
       </div>
     </div>
@@ -63,8 +63,9 @@
 
 <script>
 import logo from '../assets/logo.png';
-import { CATALOGO, formatearPrecio } from '../catalog.js';
+import { formatearPrecio } from '../catalog.js';
 import { useCarritoStore } from '../stores/carrito.js';
+import { useProductosStore } from '../stores/productos.js';
 import api from '../Api/api.js';
 import { esSesionDemo, obtenerUsuarioDemo } from '../Api/demoAuth.js';
 
@@ -83,11 +84,11 @@ export default {
   data() {
     return {
       carrito: useCarritoStore(),
+      productos: useProductosStore(),
       logoUrl: logo,
       busquedaAbierta: false,
       categoriasAbiertas: false,
       usuario: null, // acá guardamos la información del usuario logueado
-      resultadosBusqueda: [CATALOGO[2], CATALOGO[7]],
       // Nombres todavía sin definir — placeholders genéricos hasta decidir
       // la taxonomía real de categorías. Ícono genérico (igual para todas)
       // porque tampoco está definida la iconografía final.
@@ -117,9 +118,14 @@ export default {
   computed: {
     categoriaActivaData() {
       return this.categoriasMenu.find(c => c.id === this.categoriaActiva);
+    },
+    resultadosBusqueda() {
+      return this.productos.lista.slice(0, 2);
     }
   },
   async mounted() {
+    this.productos.cargar();
+
     // si es la sesión de prueba, no hace falta backend: usamos el
     // usuario demo directo
     if (esSesionDemo()) {
