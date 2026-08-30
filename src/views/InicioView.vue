@@ -3,8 +3,8 @@
     <store-header></store-header>
     <banner-slider></banner-slider>
     <div class="quick-links">
-      <button class="tile" @click="$router.push({name:'categoria'})">CATEGORIA<br>PRODUCTO</button>
-      <button class="tile" @click="$router.push({name:'categoria'})">CATEGORIA<br>PRODUCTO</button>
+      <button class="tile" @click="$router.push({name:'categoria'})">CATEGORÍA<br>PRODUCTO</button>
+      <button class="tile" @click="$router.push({name:'categoria'})">CATEGORÍA<br>PRODUCTO</button>
       <button class="tile" @click="$router.push({name:'categoria'})">SERVICIO</button>
       <button class="tile" @click="$router.push({name:'categoria'})">SERVICIO</button>
     </div>

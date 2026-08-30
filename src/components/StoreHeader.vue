@@ -56,7 +56,7 @@
       <a class="cart-link" @click="carrito.abrir()">
         <div class="cart-icon">🛒<span class="badge">{{ carrito.cantidad }}</span></div>CARRITO<br><span>{{ carrito.totalFormateado }}</span>
       </a>
-      <a class="contact">Contacto 📞</a>
+
     </div>
   </div>
 </template>
