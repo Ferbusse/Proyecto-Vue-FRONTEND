@@ -15,10 +15,7 @@
       </div>
     </div>
     <div class="continua">(continua con ofertas etc)</div>
-    <footer class="site-footer">
-      DISCLAIMERS, CONTACTO, UBICACIÓN, ETC.
-      <router-link class="admin-link" :to="{name:'admin-panel'}">Panel Administrador →</router-link>
-    </footer>
+    <site-footer :con-acceso-admin="true"></site-footer>
   </div>
 </template>
 
@@ -26,12 +23,13 @@
 import StoreHeader from '../components/StoreHeader.vue';
 import BannerSlider from '../components/BannerSlider.vue';
 import ProductCard from '../components/ProductCard.vue';
+import SiteFooter from '../components/SiteFooter.vue';
 import { dividirEnGrupos } from '../catalog.js';
 import { useProductosStore } from '../stores/productos.js';
 
 export default {
   name: 'InicioView',
-  components: { StoreHeader, BannerSlider, ProductCard },
+  components: { StoreHeader, BannerSlider, ProductCard, SiteFooter },
   data() {
     return { productos: useProductosStore() };
   },

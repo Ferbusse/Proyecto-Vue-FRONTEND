@@ -33,7 +33,7 @@
       </div>
     </div>
     </template>
-    <footer class="site-footer">DISCLAIMERS, CONTACTO, UBICACIÓN, ETC.</footer>
+    <site-footer></site-footer>
     <div class="toast" :class="{show: mostrarAviso}">Añadido al carrito ✓</div>
   </div>
 </template>
@@ -41,13 +41,14 @@
 <script>
 import StoreHeader from '../components/StoreHeader.vue';
 import ProductCard from '../components/ProductCard.vue';
+import SiteFooter from '../components/SiteFooter.vue';
 import { formatearPrecio } from '../catalog.js';
 import { useCarritoStore } from '../stores/carrito.js';
 import { useProductosStore } from '../stores/productos.js';
 
 export default {
   name: 'ProductoView',
-  components: { StoreHeader, ProductCard },
+  components: { StoreHeader, ProductCard, SiteFooter },
   // "id" llega solo como prop porque en el router pusimos props:true
   // en la ruta /producto/:id — así este componente no depende de
   // leer $route a mano.

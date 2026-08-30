@@ -46,17 +46,18 @@
       </main>
     </div>
 
-    <footer class="site-footer">DISCLAIMERS, CONTACTO, UBICACIÓN, ETC.</footer>
+    <site-footer></site-footer>
   </div>
 </template>
 
 <script>
 import StoreHeader from './StoreHeader.vue';
+import SiteFooter from './SiteFooter.vue';
 import { cerrarSesion } from '../Api/sesion.js';
 
 export default {
   name: 'CuentaShell',
-  components: { StoreHeader },
+  components: { StoreHeader, SiteFooter },
   props: {
     // 'escritorio' | 'pedidos' | 'direcciones' | 'detalles' | 'wishlist'
     activo: { type: String, required: true },

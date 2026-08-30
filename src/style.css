@@ -97,9 +97,34 @@
   .cart-icon .badge{position:absolute; top:-8px; right:-10px; background:var(--azul); color:#fff; font-size:9px; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
   .contact{display:flex; align-items:center; gap:6px; color:var(--azul); font-weight:700; font-size:14px; text-decoration:none;}
 
-  footer.site-footer{background:var(--azul); color:#fff; text-align:center; padding:30px 20px; font-size:20px; letter-spacing:.5px;}
-  footer.site-footer .admin-link{display:block; margin-top:10px; font-size:12px; color:#b9c1f5; text-decoration:none;}
+  footer.site-footer{background:var(--azul); color:#fff; padding:36px 32px 20px; margin-top:auto; font-size:14px;}
+
+  /* Cada pantalla ocupa como mínimo toda la altura visible, en columna,
+     así el footer (disclaimers/contacto/ubicación) queda siempre pegado
+     abajo del todo — con poco contenido, al final de la pantalla; con
+     mucho, después de hacer scroll. Antes se pegaba justo debajo del
+     contenido, subiendo o bajando según cuánto hubiera. */
+  .view{display:flex; flex-direction:column; min-height:100vh;}
+
+  .site-footer-cols{display:flex; gap:40px; max-width:1100px; margin:0 auto; flex-wrap:wrap;}
+  .site-footer-col{flex:1; min-width:200px;}
+  .site-footer-col h4{margin:0 0 12px; font-size:14px; letter-spacing:.5px; text-transform:uppercase; color:#fff;}
+  .site-footer-disclaimer{margin:0; color:#c7cdf2; line-height:1.6; font-size:13px;}
+  .site-footer-col ul{list-style:none; margin:0; padding:0;}
+  .site-footer-col ul li{margin-bottom:8px;}
+  .site-footer-col a{color:#c7cdf2; text-decoration:none;}
+  .site-footer-col a:hover{color:#fff; text-decoration:underline;}
+  .site-footer-col address{font-style:normal; color:#c7cdf2; line-height:1.6;}
+  .site-footer-horario{margin:8px 0 0; color:#c7cdf2; font-size:13px;}
+
+  .site-footer-bottom{max-width:1100px; margin:26px auto 0; padding-top:18px; border-top:1px solid rgba(255,255,255,.15); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; font-size:12px; color:#a9b0e8;}
+  footer.site-footer .admin-link{font-size:12px; color:#b9c1f5; text-decoration:none;}
   footer.site-footer .admin-link:hover{color:#fff;}
+
+  @media(max-width:700px){
+    .site-footer-cols{flex-direction:column; gap:24px;}
+    .site-footer-bottom{flex-direction:column; text-align:center;}
+  }
 
   /* ===== INICIO / CARRUSEL DEL BANNER ===== */
   .banner-slider{position:relative; overflow:hidden;}
@@ -282,6 +307,7 @@
   .modal-overlay{position:fixed; inset:0; background:rgba(15,26,112,.65); display:none; align-items:flex-start; justify-content:center; z-index:300; overflow:auto; padding:40px 16px;}
   .modal-overlay.open{display:flex;}
   .modal-box{background:#f7f7f9; width:100%; max-width:500px; padding:30px 40px 40px; position:relative; margin-top:20px;}
+  .modal-box-ancho{max-width:600px;}
   .modal-close{position:absolute; top:24px; left:24px; font-size:22px; color:var(--azul); background:none; border:none;}
   .modal-box h2{text-align:center; color:var(--azul); font-weight:800; font-size:26px; margin:40px 0 30px;}
   .pay-options{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;}
@@ -299,8 +325,30 @@
   .card-form-row{display:flex; gap:16px; margin-bottom:16px;}
   .card-form-row .fg{flex:1;}
   .card-form-row .fg label{display:block; color:var(--azul); font-weight:700; font-size:13px; margin-bottom:5px;}
-  .card-form-row .fg input{width:100%; padding:9px 10px; border:1px solid #999; border-radius:2px;}
-  .visa-badge{border:1px solid #999; border-radius:4px; width:100px; height:46px; display:flex; align-items:center; justify-content:center; color:#1a1f71; font-weight:800; font-style:italic;}
+  .card-form-row .fg input{width:100%; padding:9px 10px; border:1px solid #999; border-radius:2px; font-size:14px; font-family:inherit; transition:border-color .15s ease;}
+  .card-form-row .fg input:focus{outline:none; border-color:var(--azul); box-shadow:0 0 0 2px rgba(20,32,140,.12);}
+  .visa-badge{border:1px solid #999; border-radius:4px; width:100px; height:46px; display:flex; align-items:center; justify-content:center; color:#1a1f71; font-weight:800; font-style:italic; text-align:center; padding:0 6px; font-size:13px;}
+
+  /* ===== TARJETA VISUAL (vista previa mientras se completa el pago) ===== */
+  .tarjeta-visual{
+    position:relative; overflow:hidden; border-radius:14px; padding:22px 24px;
+    color:#fff; margin-bottom:26px; box-shadow:0 12px 26px rgba(20,32,140,.3);
+    background:linear-gradient(135deg, var(--azul) 0%, var(--azul-oscuro) 100%);
+  }
+  .tarjeta-visual::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:repeating-radial-gradient(circle at 90% 10%, rgba(255,255,255,.07) 0 2px, transparent 2px 30px);
+  }
+  .tarjeta-visual-mc{background:linear-gradient(135deg, #2a2f45 0%, #14151f 100%);}
+  .tarjeta-visual-oca{background:linear-gradient(135deg, #1478c6 0%, #0d4d84 100%);}
+  .tarjeta-visual-top{position:relative; display:flex; align-items:center; justify-content:space-between; margin-bottom:26px;}
+  .tarjeta-chip{width:38px; height:28px; border-radius:5px; background:linear-gradient(135deg, #f4d99b 0%, #d8b45c 100%); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);}
+  .tarjeta-marca{font-weight:800; font-style:italic; letter-spacing:.5px; font-size:15px; text-shadow:0 1px 2px rgba(0,0,0,.2);}
+  .tarjeta-numero{position:relative; font-size:19px; letter-spacing:2px; font-family:'Courier New', monospace; margin-bottom:22px;}
+  .tarjeta-visual-bottom{position:relative; display:flex; justify-content:space-between; align-items:flex-end; gap:16px;}
+  .tarjeta-mini-label{font-size:9px; text-transform:uppercase; opacity:.75; letter-spacing:.8px; display:block; margin-bottom:3px;}
+  .tarjeta-nombre{font-size:14px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; word-break:break-word;}
+  .tarjeta-vencimiento{font-size:14px; font-weight:600; font-family:'Courier New', monospace;}
 
   /* ===== PANTALLAS DE LOGIN Y REGISTRO ===== */
   .auth-shell{min-height:100vh; display:flex;}
@@ -392,6 +440,7 @@
   .admin-sidebar{width:230px; flex-shrink:0; padding:20px 30px; display:flex; flex-direction:column; gap:14px; background:#eef0f7; border-right:1px solid #e2e4f0;}
   .admin-sidebar a{color:var(--azul); text-decoration:none; font-size:19px; font-family:inherit;}
   .admin-sidebar a.active{color:#111; font-weight:800;}
+  .admin-sidebar a.desactivado{color:#aaa; cursor:not-allowed;}
   .admin-user{margin-top:auto; display:flex; align-items:center; gap:10px; background:#fff; padding:14px; border-radius:4px; box-shadow:0 1px 3px rgba(0,0,0,.08); flex-shrink:0;}
   .admin-user .av{width:38px; height:38px; border-radius:50%; background:#ccc; display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; flex-shrink:0;}
   .admin-user .name{font-weight:700; color:#222; font-size:14px;}
@@ -411,6 +460,9 @@
     transition:box-shadow .15s ease, transform .15s ease, border-color .15s ease;
   }
   .admin-tile:hover{border-color:var(--azul); box-shadow:0 8px 18px rgba(20,32,140,.14); transform:translateY(-2px);}
+  .admin-tile-desactivado{opacity:.55; cursor:not-allowed;}
+  .admin-tile-desactivado:hover{border-color:var(--linea); box-shadow:0 1px 3px rgba(20,32,140,.06); transform:none;}
+  .admin-tile-desactivado .admin-tile-icon{background:#eee; color:#999;}
   .admin-tile-icon{width:46px; height:46px; flex-shrink:0; border-radius:10px; background:#eef0fb; color:var(--azul); display:flex; align-items:center; justify-content:center;}
   .admin-tile-icon svg{width:24px; height:24px;}
   .admin-tile-text{flex:1; display:flex; flex-direction:column; gap:2px;}
@@ -449,6 +501,14 @@
 
   /* ===== "SIN PRODUCTOS" / ERROR (listado de productos) ===== */
   .producto-error, .producto-vacio{padding:18px 20px; color:var(--azul);}
+
+  /* ===== ÓRDENES: badge de estado y modal de detalle ===== */
+  .estado-badge{display:inline-block; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700;}
+  .orden-detalle-info p{margin:0 0 6px; font-size:14px; color:#333;}
+  .orden-detalle-items{border:1px solid var(--linea); border-radius:8px; margin:14px 0 20px; overflow:hidden;}
+  .orden-item-row{display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid var(--linea); font-size:14px;}
+  .orden-item-row:last-child{border-bottom:none;}
+  .orden-item-nombre{color:#333;}
 
   .stat-cards{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:22px;}
   .stat-card{flex:1; min-width:210px; background:#fff; border:1px solid var(--linea); border-radius:12px; padding:18px 20px; box-shadow:0 1px 3px rgba(20,32,140,.06);}

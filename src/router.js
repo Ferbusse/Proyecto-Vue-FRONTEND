@@ -13,7 +13,9 @@ import DetallesCuentaView from './views/cuenta/DetallesCuentaView.vue';
 import WishlistView from './views/cuenta/WishlistView.vue';
 import AdminPanelView from './views/admin/AdminPanelView.vue';
 import AdminProductosView from './views/admin/AdminProductosView.vue';
-import AdminEmpleadosView from './views/admin/AdminEmpleadosView.vue';
+// Empleados está desactivado (no se usa por ahora), pero se deja el
+// import comentado para reactivarlo fácil si hace falta más adelante.
+// import AdminEmpleadosView from './views/admin/AdminEmpleadosView.vue';
 import AdminOrdenesView from './views/admin/AdminOrdenesView.vue';
 import AdminAnaliticasView from './views/admin/AdminAnaliticasView.vue';
 
@@ -37,7 +39,7 @@ const router = createRouter({
     { path: '/perfil/wishlist', name: 'cuenta-wishlist', component: WishlistView },
     { path: '/admin', name: 'admin-panel', component: AdminPanelView },
     { path: '/admin/productos', name: 'admin-productos', component: AdminProductosView },
-    { path: '/admin/empleados', name: 'admin-empleados', component: AdminEmpleadosView },
+    // { path: '/admin/empleados', name: 'admin-empleados', component: AdminEmpleadosView },
     { path: '/admin/ordenes', name: 'admin-ordenes', component: AdminOrdenesView },
     { path: '/admin/analiticas', name: 'admin-analiticas', component: AdminAnaliticasView }
   ]
