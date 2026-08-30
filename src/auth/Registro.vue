@@ -4,7 +4,7 @@
     <div class="auth-card">
       <router-link class="modal-close" :to="{name:'inicio'}">✕</router-link>
       <h1>Registrarse</h1>
-      <div class="auth-field"><label>Correo Electrónico:*</label><input type="email"></div>
+      <div class="auth-field"><label>Correo electrónico:*</label><input type="email"></div>
       <div class="auth-field"><label>Nombre de usuario:*</label><input type="text"></div>
       <div class="auth-field">
         <label>Contraseña:*</label>
@@ -12,7 +12,7 @@
         <button class="toggle-pass" type="button" @click="mostrarClaveUno=!mostrarClaveUno">👁</button>
       </div>
       <div class="auth-field">
-        <label>Repetir Contraseña:*</label>
+        <label>Repetir contraseña:*</label>
         <input :type="mostrarClaveDos ? 'text':'password'">
         <button class="toggle-pass" type="button" @click="mostrarClaveDos=!mostrarClaveDos">👁</button>
       </div>

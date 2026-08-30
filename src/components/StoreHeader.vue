@@ -35,7 +35,7 @@
             :key="cat.id"
             :class="{active: categoriaActiva===cat.id}"
             @mouseenter="categoriaActiva = cat.id"
-            @click="irACategoria"
+            @click="irACategoria(cat.id)"
           >
             <span class="mm-icon">{{ cat.icono }}</span>
             <span class="mm-label">{{ cat.nombre }}</span>
@@ -56,7 +56,7 @@
       <a class="cart-link" @click="carrito.abrir()">
         <div class="cart-icon">🛒<span class="badge">{{ carrito.cantidad }}</span></div>CARRITO<br><span>{{ carrito.totalFormateado }}</span>
       </a>
-
+      
     </div>
   </div>
 </template>
@@ -69,16 +69,6 @@ import { useProductosStore } from '../stores/productos.js';
 import api from '../Api/api.js';
 import { esSesionDemo, obtenerUsuarioDemo } from '../Api/demoAuth.js';
 
-// Grupos de subcategorías genéricos, reutilizados por varias categorías
-// (todavía no hay taxonomía real definida).
-const dosGrupos = [
-  { titulo:'GRUPO A', items:['Subcategoría 1','Subcategoría 2','Subcategoría 3'] },
-  { titulo:'GRUPO B', items:['Subcategoría 4','Subcategoría 5','Subcategoría 6'] }
-];
-const unGrupo = [
-  { titulo:'GRUPO A', items:['Subcategoría 1','Subcategoría 2','Subcategoría 3'] }
-];
-
 export default {
   name: 'StoreHeader',
   data() {
@@ -88,31 +78,9 @@ export default {
       logoUrl: logo,
       busquedaAbierta: false,
       categoriasAbiertas: false,
-      usuario: null, // acá guardamos la información del usuario logueado
-      // Nombres todavía sin definir — placeholders genéricos hasta decidir
-      // la taxonomía real de categorías. Ícono genérico (igual para todas)
-      // porque tampoco está definida la iconografía final.
-      categoriaActiva: 'cat1',
-      categoriasMenu: [
-        { id:'cat1',  icono:'▪', nombre:'Categoría 1',  subcategorias: dosGrupos },
-        { id:'cat2',  icono:'▪', nombre:'Categoría 2',  subcategorias: dosGrupos },
-        { id:'cat3',  icono:'▪', nombre:'Categoría 3',  subcategorias: unGrupo },
-        { id:'cat4',  icono:'▪', nombre:'Categoría 4',  subcategorias: dosGrupos },
-        { id:'cat5',  icono:'▪', nombre:'Categoría 5',  subcategorias: unGrupo },
-        { id:'cat6',  icono:'▪', nombre:'Categoría 6',  subcategorias: dosGrupos },
-        { id:'cat7',  icono:'▪', nombre:'Categoría 7',  subcategorias: unGrupo },
-        { id:'cat8',  icono:'▪', nombre:'Categoría 8',  subcategorias: dosGrupos },
-        { id:'cat9',  icono:'▪', nombre:'Categoría 9',  subcategorias: unGrupo },
-        { id:'cat10', icono:'▪', nombre:'Categoría 10', subcategorias: dosGrupos },
-        { id:'cat11', icono:'▪', nombre:'Categoría 11', subcategorias: dosGrupos },
-        { id:'cat12', icono:'▪', nombre:'Categoría 12', subcategorias: unGrupo },
-        { id:'cat13', icono:'▪', nombre:'Categoría 13', subcategorias: unGrupo },
-        { id:'cat14', icono:'▪', nombre:'Categoría 14', subcategorias: dosGrupos },
-        { id:'cat15', icono:'▪', nombre:'Categoría 15', subcategorias: unGrupo },
-        { id:'cat16', icono:'▪', nombre:'Categoría 16', subcategorias: dosGrupos },
-        { id:'cat17', icono:'▪', nombre:'Categoría 17', subcategorias:[] },
-        { id:'cat18', icono:'▪', nombre:'Categoría 18', subcategorias:[] }
-      ]
+      usuario: null,
+      categoriaActiva: null,
+      categoriasMenu: []
     };
   },
   computed: {
@@ -125,17 +93,13 @@ export default {
   },
   async mounted() {
     this.productos.cargar();
+    await this.cargarCategorias();
 
-    // si es la sesión de prueba, no hace falta backend: usamos el
-    // usuario demo directo
     if (esSesionDemo()) {
       this.usuario = obtenerUsuarioDemo();
       return;
     }
     try {
-      // le preguntamos al backend los datos del usuario logueado
-      // (si no hay token o no es válido, esto tira error y usuario
-      // se queda en null — mostramos "Iniciar sesión / Registrarse")
       const response = await api.get('/user');
       this.usuario = response.data;
     } catch (error) {
@@ -144,12 +108,36 @@ export default {
   },
   methods: {
     formatearPrecio,
+    async cargarCategorias() {
+      try {
+        const response = await api.get('/categorias');
+        const categorias = Array.isArray(response.data) ? response.data : [];
+
+        this.categoriasMenu = categorias.map((categoria, index) => ({
+          id: String(categoria.id ?? index + 1),
+          icono: '▪',
+          nombre: categoria.nombre || `Categoría ${index + 1}`,
+          subcategorias: []
+        }));
+
+        if (this.categoriasMenu.length) {
+          this.categoriaActiva = this.categoriasMenu[0].id;
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        this.categoriasMenu = [];
+        this.categoriaActiva = null;
+      }
+    },
     alPerderFoco() {
       setTimeout(() => { this.busquedaAbierta = false; }, 150);
     },
-    irACategoria() {
+    irACategoria(categoriaId = null) {
+      // Si se hace click en una categoría del menú, llevamos al usuario a la
+      // vista de catálogo con el filtro aplicado en la query.
       this.categoriasAbiertas = false;
-      this.$router.push({ name: 'categoria' });
+      const query = categoriaId ? { categoria: String(categoriaId) } : {};
+      this.$router.push({ name: 'categoria', query });
     }
   }
 };

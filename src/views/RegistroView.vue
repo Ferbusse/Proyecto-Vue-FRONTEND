@@ -5,7 +5,7 @@
       <router-link class="modal-close" :to="{name:'inicio'}">✕</router-link>
       <h1>Registrarse</h1>
       <form @submit.prevent="registrar">
-      <div class="auth-field"><label>Correo Electrónico:*</label><input v-model="form.email" type="email" required></div>
+      <div class="auth-field"><label>Correo electrónico:*</label><input v-model="form.email" type="email" required></div>
       <div class="auth-field"><label>Nombre de usuario:*</label><input v-model="form.name" type="text" required></div>
       <div class="auth-field">
         <label>Contraseña:*</label>
@@ -13,7 +13,7 @@
         <button class="toggle-pass" type="button" @click="verClave1=!verClave1">👁</button>
       </div>
       <div class="auth-field">
-        <label>Repetir Contraseña:*</label>
+        <label>Repetir contraseña:*</label>
         <input v-model="form.password_confirmation" :type="verClave2 ? 'text':'password'" minlength="6" required>
         <button class="toggle-pass" type="button" @click="verClave2=!verClave2">👁</button>
       </div>

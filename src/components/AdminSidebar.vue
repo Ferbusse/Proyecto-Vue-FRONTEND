@@ -7,7 +7,7 @@
     <a @click="avisoDemo('Próximamente')">Financias</a>
     <a :class="{active: active==='ordenes'}" @click="$router.push({name:'admin-ordenes'})">Ordenes</a>
     <a @click="avisoDemo('Próximamente')">Envios</a>
-    <a class="desactivado" @click="avisoDemo('Sección desactivada por ahora')">Empleados</a>
+    <a :class="{active: active==='empleados'}" @click="$router.push({name:'admin-empleados'})">Empleados</a>
     <div class="admin-user"><div class="av">🙂</div><div><div class="name">El Pepe</div><div class="role">ADMIN</div></div></div>
   </div>
 </template>

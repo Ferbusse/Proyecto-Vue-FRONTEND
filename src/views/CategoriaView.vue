@@ -5,16 +5,21 @@
       <div class="cat-sidebar">
         <div class="cat-inner-sidebar">
           <div class="cat-group">
-            <a class="cat-group-title">CATEGORÍA <span>–</span></a>
-            <div class="cat-sub">
-              <a v-for="n in 5" :key="n">Subcategoria</a>
-            </div>
+            <a
+              class="cat-group-title"
+              :class="{activa: !categoriaSeleccionada}"
+              @click="seleccionarCategoria(null)"
+            >TODAS LAS CATEGORÍAS</a>
           </div>
-          <div class="cat-group"><a class="cat-group-title">CATEGORÍA <span>+</span></a></div>
-          <div class="cat-group"><a class="cat-group-title">CATEGORÍA</a></div>
-          <div class="cat-group"><a class="cat-group-title">CATEGORÍA <span>+</span></a></div>
-          <div class="cat-group"><a class="cat-group-title">CATEGORÍA</a></div>
-          <div class="cat-group"><a class="cat-group-title">CATEGORÍA <span>+</span></a></div>
+
+          <div v-if="categorias.length" class="cat-group" v-for="categoria in categorias" :key="categoria.id">
+            <a
+              class="cat-group-title"
+              :class="{activa: categoriaSeleccionada === String(categoria.id)}"
+              @click="seleccionarCategoria(categoria.id)"
+            >{{ categoria.nombre.toUpperCase() }}</a>
+          </div>
+          <p v-else class="producto-vacio">Cargando categorías…</p>
           <div class="filter-box">
             <h4>Filtrar por precio</h4>
             <input type="range" min="290" max="3500" v-model="filtroPrecio">
@@ -35,6 +40,7 @@
         <div class="cat-grid">
           <cat-card v-for="producto in itemsGrilla" :key="producto.id" :product="producto"></cat-card>
         </div>
+        <div v-if="!itemsGrilla.length" class="producto-vacio">No hay productos para esta categoría.</div>
         <div class="pagination">
           <button class="arrow-btn">‹</button>
           <button v-for="n in 4" :key="n" :class="{active: n===1}">{{n}}</button>
@@ -48,6 +54,7 @@
 <script>
 import StoreHeader from '../components/StoreHeader.vue';
 import CatCard from '../components/CatCard.vue';
+import api from '../Api/api.js';
 import { useProductosStore } from '../stores/productos.js';
 
 export default {
@@ -56,23 +63,64 @@ export default {
   data() {
     return {
       productos: useProductosStore(),
+      categorias: [],
+      categoriaSeleccionada: null,
       filtroPrecio: 4000,
       ordenarPor: 'menor'
     };
   },
   computed: {
+    // Filtra primero por precio y luego, si hay una categoría seleccionada,
+    // deja solo los productos que pertenecen a esa categoría.
     itemsGrilla() {
-      const lista = this.productos.lista.filter(p => p.price <= this.filtroPrecio);
+      let lista = this.productos.lista.filter(p => p.price <= this.filtroPrecio);
+
+      if (this.categoriaSeleccionada) {
+        lista = lista.filter((producto) => {
+          const ids = producto.categoriaIds || [];
+          const categoriaId = producto.categoriaId != null ? String(producto.categoriaId) : null;
+          return categoriaId === String(this.categoriaSeleccionada) || ids.includes(String(this.categoriaSeleccionada));
+        });
+      }
+
       const ordenada = [...lista];
       if (this.ordenarPor === 'menor') ordenada.sort((a, b) => a.price - b.price);
       if (this.ordenarPor === 'mayor') ordenada.sort((a, b) => b.price - a.price);
-      // "más vendidos" queda igual al orden que trae el backend, todavía
-      // no tenemos ese dato
+      if (this.ordenarPor === 'vendidos') ordenada.sort((a, b) => Number(b.stock || 0) - Number(a.stock || 0));
       return ordenada;
     }
   },
-  mounted() {
+  watch: {
+    // Lee la categoría desde la URL para que el filtro se mantenga si se
+    // recarga la página o se comparte el link de una categoría concreta.
+    '$route.query.categoria': {
+      immediate: true,
+      handler(nuevoValor) {
+        this.categoriaSeleccionada = nuevoValor ? String(nuevoValor) : null;
+      }
+    }
+  },
+  async mounted() {
     this.productos.cargar();
+    await this.cargarCategorias();
+  },
+  methods: {
+    async cargarCategorias() {
+      try {
+        const response = await api.get('/categorias');
+        this.categorias = Array.isArray(response.data) ? response.data : [];
+      } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        this.categorias = [];
+      }
+    },
+    seleccionarCategoria(categoriaId) {
+      // Al hacer click en una categoría, actualizamos el filtro y la URL para
+      // que la vista quede sincronizada con la selección del usuario.
+      this.categoriaSeleccionada = categoriaId ? String(categoriaId) : null;
+      const query = categoriaId ? { categoria: String(categoriaId) } : {};
+      this.$router.push({ name: 'categoria', query }).catch(() => {});
+    }
   }
 };
 </script>

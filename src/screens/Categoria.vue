@@ -6,7 +6,7 @@
         <div class="cat-group">
           <a class="cat-group-title">CATEGORÍA <span>–</span></a>
           <div class="cat-sub">
-            <a v-for="n in 5" :key="n">Subcategoria</a>
+            <a v-for="n in 5" :key="n">Subcategoría</a>
           </div>
         </div>
         <div class="cat-group"><a class="cat-group-title">CATEGORÍA <span>+</span></a></div>

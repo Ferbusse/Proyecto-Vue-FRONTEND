@@ -3,7 +3,7 @@
     <div class="auth-side"></div>
     <div class="auth-card">
       <router-link class="modal-close" :to="{name:'inicio'}">✕</router-link>
-      <h1>Inicio Sesión</h1>
+      <h1>Iniciar sesión</h1>
       <form @submit.prevent="iniciarSesion">
       <div class="auth-field"><label>Correo electrónico:</label><input v-model="form.email" type="email" required></div>
       <div class="auth-field">
@@ -41,10 +41,10 @@ export default {
 
       // Si lo que escribió coincide con la cuenta de prueba (ver
       // src/Api/demoAuth.js), entramos directo sin tocar el backend.
-      // No hay ningún botón visible para esto a propósito — solo
-      // funciona si conocés el email/contraseña.
+      // En modo demo abrimos el panel admin para poder probar el flujo
+      // administrativo sin tener que navegar desde la home.
       if (intentarLoginDemo(this.form.email, this.form.password)) {
-        await this.$router.push({ name: 'inicio' });
+        await this.$router.push({ name: 'admin-panel' });
         return;
       }
 

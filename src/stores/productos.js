@@ -21,11 +21,20 @@ export function obtenerUrlImagen(productoBackend) {
 // acá, una sola vez, así el resto de los componentes no tiene que
 // saber de dónde vino el producto.
 function normalizar(productoBackend) {
+  // Normalizamos la categoría del backend para que el filtro del catálogo
+  // pueda compararla con la categoría seleccionada por el usuario.
+  const categorias = Array.isArray(productoBackend.categorias) ? productoBackend.categorias : [];
+  const categoriaIds = categorias.map(categoria => String(categoria.id));
+  const categoriaId = productoBackend.categoria_id != null ? String(productoBackend.categoria_id) : (categoriaIds[0] ?? null);
+
   return {
     id: String(productoBackend.id),
     name: productoBackend.nombre,
     price: Number(productoBackend.precio_venta),
     stock: productoBackend.stock,
+    categoriaId,
+    categoriaIds,
+    categoriaNombre: categorias[0]?.nombre || null,
     imagenUrl: obtenerUrlImagen(productoBackend)
     // "icono" queda sin definir a propósito: si el producto no tiene
     // foto propia, el placeholder con ícono genérico se muestra solo

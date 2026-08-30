@@ -90,6 +90,8 @@
             <div class="form-group">
               <label for="prod-categoria">Categoría</label>
               <div class="categoria-picker">
+                <!-- El select lista todas las categorías existentes en la base.
+                     Luego se permite crear otra o borrar la elegida. -->
                 <select id="prod-categoria" v-model="formulario.categoria_id" required>
                   <option :value="null" disabled>Seleccionar categoría</option>
                   <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{ categoria.nombre }}</option>
@@ -101,9 +103,17 @@
                   aria-label="Agregar categoría nueva"
                   @click="mostrarNuevaCategoria = !mostrarNuevaCategoria"
                 >＋</button>
+                <button
+                  type="button"
+                  class="categoria-borrar-btn"
+                  title="Eliminar categoría seleccionada"
+                  aria-label="Eliminar categoría seleccionada"
+                  :disabled="!formulario.categoria_id"
+                  @click="borrarCategoriaSeleccionada"
+                >🗑</button>
               </div>
 
-              <!-- Mini formulario para crear una categoría sin salir de acá -->
+              <!-- Formulario inline para crear una categoría sin salir del modal -->
               <div v-if="mostrarNuevaCategoria" class="categoria-nueva">
                 <input
                   v-model="nombreNuevaCategoria"
@@ -299,7 +309,8 @@ export default {
         const response = await api.post('/categorias', { nombre });
         const nueva = response.data;
         await this.cargarCategorias();
-        // seleccionamos automáticamente la que se acaba de crear
+        // Automáticamente selecciona la categoría recién creada para que el
+        // producto quede asociado a ella en el mismo momento.
         this.formulario.categoria_id = nueva?.id ?? this.categorias.find(c => c.nombre === nombre)?.id ?? null;
         this.cancelarNuevaCategoria();
       } catch (requestError) {
@@ -307,6 +318,27 @@ export default {
         this.errorCategoria = requestError.response?.data?.message || 'No se pudo crear la categoría.';
       } finally {
         this.creandoCategoria = false;
+      }
+    },
+    async borrarCategoriaSeleccionada() {
+      const categoriaId = this.formulario.categoria_id;
+      if (!categoriaId) return;
+
+      const categoria = this.categorias.find(c => c.id === categoriaId);
+      if (!categoria) return;
+
+      // Pide confirmación antes de borrar porque la categoría puede estar en uso.
+      const confirmado = confirm(`¿Seguro que querés borrar la categoría "${categoria.nombre}"?`);
+      if (!confirmado) return;
+
+      this.errorCategoria = '';
+      try {
+        await api.delete(`/categorias/${categoriaId}`);
+        this.formulario.categoria_id = null;
+        await this.cargarCategorias();
+      } catch (requestError) {
+        console.error('Error al borrar categoría:', requestError);
+        this.errorCategoria = requestError.response?.data?.message || 'No se pudo borrar la categoría.';
       }
     },
 

@@ -3,7 +3,7 @@
     <router-link class="logo" :to="{name:'inicio'}"><img class="logo-img" :src="pepeImg" alt="Zona Móvil"></router-link>
     <div class="search-box" :class="{'show-results': flagBusca}" @focusin="flagBusca=true" @focusout="cuandoSeVa">
       <div class="search-row">
-        <input class="search-input" type="text" placeholder="¿Que estas buscando hoy?">
+        <input class="search-input" type="text" placeholder="¿Qué estás buscando hoy?">
         <button class="search-btn">🔍</button>
       </div>
       <div class="search-results">
@@ -52,7 +52,7 @@
       <a class="cart-link" @click="pepe.destaparPepe()">
         <div class="cart-icon">🛒<span class="badge">{{ pepe.numeroCosas }}</span></div>CARRITO<br><span>{{ pepe.montonTotalTexto }}</span>
       </a>
-      <a class="contact">Contacto 📞</a>
+  
     </div>
   </div>
 </template>
@@ -62,7 +62,7 @@ import pepeImg from '../../recursos/imgs/logo.png';
 import { LISTA_COSAS, plataFormato } from '../../data/varios/cositas.js'
 import { usePepeStore } from '../../store/pepeStore.js';
 
-// grupos de subcategorías genéricos reciclados, todavia sin taxonomia real
+// grupos de subcategorías genéricos reciclados, todavía sin taxonomía real
 const dosGrupos = [
   { titulo:'GRUPO A', items:['Subcategoría 1','Subcategoría 2','Subcategoría 3'] },
   { titulo:'GRUPO B', items:['Subcategoría 4','Subcategoría 5','Subcategoría 6'] }
