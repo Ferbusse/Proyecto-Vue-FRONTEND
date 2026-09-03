@@ -2,16 +2,26 @@ import { defineStore } from 'pinia';
 import api from '../Api/api.js';
 import { CATALOGO } from '../catalog.js';
 
-// Arma la URL completa de la imagen del producto. El backend puede
-// mandarla de dos formas: ya como URL completa ("imagen_url"), o
-// como una ruta relativa dentro del disco público de Laravel
-// ("imagen": "productos/foto.jpg") — en ese caso la armamos contra
-// el mismo host de la API (sacándole el "/api" del final).
+// Arma la URL completa de la imagen del producto. Probamos varios
+// nombres de campo posibles, porque no sabemos con certeza cuál usa
+// el backend real:
+// - ya como URL completa: imagen_url, foto_url, image_url
+// - o como ruta relativa dentro del disco público de Laravel
+//   (ej: "productos/foto.jpg"), en cualquiera de estos campos:
+//   imagen, foto, image, ruta_imagen
+// Si viene una ruta relativa, la completamos contra el mismo host de
+// la API (sacándole el "/api" del final) más "/storage/", que es
+// donde Laravel sirve los archivos subidos por defecto.
 export function obtenerUrlImagen(productoBackend) {
-  if (productoBackend.imagen_url) return productoBackend.imagen_url;
-  if (productoBackend.imagen) {
+  const urlCompleta = productoBackend.imagen_url || productoBackend.foto_url || productoBackend.image_url;
+  if (urlCompleta) return urlCompleta;
+
+  const rutaRelativa = productoBackend.imagen || productoBackend.foto || productoBackend.image || productoBackend.ruta_imagen;
+  if (rutaRelativa) {
+    // si ya viene con http/https, no hace falta armar nada
+    if (/^https?:\/\//i.test(rutaRelativa)) return rutaRelativa;
     const origen = api.defaults.baseURL.replace(/\/api\/?$/, '');
-    return `${origen}/storage/${productoBackend.imagen}`;
+    return `${origen}/storage/${rutaRelativa}`;
   }
   return null;
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="topbar">
-    <router-link class="logo" :to="{name:'inicio'}"><img class="logo-img" :src="logoUrl" alt="Zona Móvil"></router-link>
+    <router-link class="logo" :to="{name:'inicio'}"><img class="logo-img" :src="logoUrl" alt="Zona Móvil" @error="$event.target.style.display='none'"></router-link>
     <div class="search-box" :class="{'show-results': busquedaAbierta}" @focusin="busquedaAbierta=true" @focusout="alPerderFoco">
       <div class="search-row">
         <input class="search-input" type="text" placeholder="¿Que estas buscando hoy?">
@@ -8,7 +8,7 @@
       </div>
       <div class="search-results">
         <div class="search-result-item" v-for="producto in resultadosBusqueda" :key="producto.id" @click="$router.push({name:'producto', params:{id: producto.id}})">
-          <span class="name">{{ producto.name }}</span><span class="price">{{ formatearPrecio(producto.price) }}</span><div class="thumb img-placeholder"><img v-if="producto.imagenUrl" :src="producto.imagenUrl" :alt="producto.name"><span v-else-if="producto.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ producto.icono }}</span></div>
+          <span class="name">{{ producto.name }}</span><span class="price">{{ formatearPrecio(producto.price) }}</span><div class="thumb img-placeholder"><img v-if="producto.imagenUrl" :src="producto.imagenUrl" :alt="producto.name" @error="$event.target.style.display='none'"><span v-else-if="producto.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ producto.icono }}</span></div>
         </div>
       </div>
     </div>
@@ -56,7 +56,6 @@
       <a class="cart-link" @click="carrito.abrir()">
         <div class="cart-icon">🛒<span class="badge">{{ carrito.cantidad }}</span></div>CARRITO<br><span>{{ carrito.totalFormateado }}</span>
       </a>
-      
     </div>
   </div>
 </template>

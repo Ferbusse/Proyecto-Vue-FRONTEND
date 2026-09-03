@@ -22,7 +22,7 @@
             <div class="details">
               <div><div class="product-name" style="text-align:left;">{{linea.product.name}}</div><div style="color:var(--azul);">{{formatearPrecio(linea.product.price)}}</div></div>
               <div class="thumb img-placeholder">
-                <img v-if="linea.product.imagenUrl" :src="linea.product.imagenUrl" :alt="linea.product.name">
+                <img v-if="linea.product.imagenUrl" :src="linea.product.imagenUrl" :alt="linea.product.name" @error="$event.target.style.display='none'">
                 <span v-else-if="linea.product.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ linea.product.icono }}</span>
               </div>
             </div>

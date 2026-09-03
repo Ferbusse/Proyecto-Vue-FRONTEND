@@ -5,7 +5,7 @@
     <template v-else-if="producto">
     <div class="product-detail">
       <div class="pd-image img-placeholder">
-        <img v-if="producto.imagenUrl" :src="producto.imagenUrl" :alt="producto.name">
+        <img v-if="producto.imagenUrl" :src="producto.imagenUrl" :alt="producto.name" @error="$event.target.style.display='none'">
         <span v-else-if="producto.icono" class="product-icono product-icono-grande" aria-hidden="true">{{ producto.icono }}</span>
       </div>
       <div class="pd-info">
@@ -21,10 +21,10 @@
       </div>
     </div>
     <div class="pd-desc">
-      <h4>Descripcion:</h4>
+      <h4>Descripción:</h4>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. laborum</p>
       <div class="pd-related" v-if="productosRelacionados.length">
-        <h4>Talvez te interese...</h4>
+        <h4>Tal vez te interese...</h4>
         <div class="products-wrap" style="margin:14px 0;">
           <div class="product-row" style="border-bottom:none;">
             <product-card v-for="p in productosRelacionados" :key="p.id" :product="p"></product-card>

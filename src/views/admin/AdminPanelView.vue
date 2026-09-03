@@ -32,15 +32,14 @@
             <span class="admin-tile-arrow" aria-hidden="true">›</span>
           </button>
 
-          <button class="admin-tile" @click="$router.push({name:'admin-empleados'})">
+          <button class="admin-tile admin-tile-desactivado" @click="avisoDemo('Sección desactivada por ahora')">
             <span class="admin-tile-icon">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="8.5" r="2.4"/><path d="M15.8 14.2c2.6.4 4.7 2.3 4.7 5.3"/></svg>
             </span>
             <span class="admin-tile-text">
               <strong>Empleados</strong>
-              <small>Gestionar el equipo</small>
+              <small>Desactivado por ahora</small>
             </span>
-            <span class="admin-tile-arrow" aria-hidden="true">›</span>
           </button>
         </div>
 
@@ -71,10 +70,13 @@ export default {
   computed: {
     ventasDia() {
       return [
-        {etiqueta:'Lunes', altura:50},{etiqueta:'Martes', altura:70},{etiqueta:'Miercoles', altura:30},
-        {etiqueta:'Jueves', altura:45},{etiqueta:'Viernes', altura:75},{etiqueta:'Sabado', altura:60}
+        {etiqueta:'Lunes', altura:50},{etiqueta:'Martes', altura:70},{etiqueta:'Miércoles', altura:30},
+        {etiqueta:'Jueves', altura:45},{etiqueta:'Viernes', altura:75},{etiqueta:'Sábado', altura:60}
       ];
     }
+  },
+  methods: {
+    avisoDemo(msg) { alert(msg); }
   }
 };
 </script>

@@ -24,7 +24,7 @@
               <div class="ic" style="background:#e6f8ec; color:#1f8a44;">
                 <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
               </div>
-              <div><div class="label">Ordenes</div><div class="value">24</div></div>
+              <div><div class="label">Órdenes</div><div class="value">24</div></div>
             </div>
             <div class="delta up">↑ 14.3% <span>vs. 24 Jun - 30 Jun</span></div>
           </div>

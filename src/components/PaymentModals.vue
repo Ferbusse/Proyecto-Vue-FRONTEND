@@ -2,7 +2,7 @@
   <div class="modal-overlay" :class="{open: carrito.modalPago}">
     <div class="modal-box">
       <button class="modal-close" @click="carrito.modalPago=false">✕</button>
-      <h2>Eliga su metodo<br>de pago</h2>
+      <h2>Elija su método<br>de pago</h2>
       <div class="pay-options">
         <button class="pay-card visa" :class="{selected: carrito.metodoPagoSeleccionado==='visa'}" @click="carrito.metodoPagoSeleccionado='visa'">VISA</button>
         <button class="pay-card mc" :class="{selected: carrito.metodoPagoSeleccionado==='mc'}" @click="carrito.metodoPagoSeleccionado='mc'">MasterCard</button>
@@ -38,7 +38,7 @@
       </div>
 
       <div class="card-form-row">
-        <div class="fg" style="flex:2;"><label>Numero de la Tarjeta:</label><input v-model="formularioTarjeta.numero" type="text" inputmode="numeric" maxlength="16" placeholder="0000 0000 0000 0000"></div>
+        <div class="fg" style="flex:2;"><label>Número de la Tarjeta:</label><input v-model="formularioTarjeta.numero" type="text" inputmode="numeric" maxlength="16" placeholder="0000 0000 0000 0000"></div>
         <div class="visa-badge">{{ etiquetaMarca }}</div>
       </div>
       <div class="card-form-row">

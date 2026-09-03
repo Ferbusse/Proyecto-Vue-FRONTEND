@@ -44,7 +44,7 @@
             <div class="col">{{ producto.stock }}</div>
             <div class="col">{{ producto.id }}</div>
             <div class="thumb img-placeholder">
-              <img v-if="obtenerUrlImagen(producto)" :src="obtenerUrlImagen(producto)" :alt="producto.nombre">
+              <img v-if="obtenerUrlImagen(producto)" :src="obtenerUrlImagen(producto)" :alt="producto.nombre" @error="$event.target.style.display='none'">
             </div>
             <input class="chk" type="checkbox" :value="producto.id" v-model="seleccionados" :aria-label="'Seleccionar ' + producto.nombre">
           </div>
@@ -74,7 +74,7 @@
               <label for="prod-imagen">Imagen del producto</label>
               <div class="imagen-picker">
                 <div class="imagen-preview">
-                  <img v-if="previewImagen" :src="previewImagen" alt="">
+                  <img v-if="previewImagen" :src="previewImagen" alt="" @error="$event.target.style.display='none'">
                   <span v-else aria-hidden="true">📷</span>
                 </div>
                 <div class="imagen-picker-controles">
@@ -397,13 +397,9 @@ export default {
         // de un verbo PUT de verdad.
         if (this.editandoId) {
           datos.append('_method', 'PUT');
-          await api.post(`/productos/${this.editandoId}`, datos, {
-            headers: { 'Content-Type': undefined } // dejamos que el navegador arme el boundary del multipart
-          });
+          await api.post(`/productos/${this.editandoId}`, datos);
         } else {
-          await api.post('/productos', datos, {
-            headers: { 'Content-Type': undefined }
-          });
+          await api.post('/productos', datos);
         }
         this.mostrarFormulario = false;
         this.limpiarImagenDelFormulario();
