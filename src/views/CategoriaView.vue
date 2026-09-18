@@ -22,8 +22,11 @@
           <p v-else class="producto-vacio">Cargando categorías…</p>
           <div class="filter-box">
             <h4>Filtrar por precio</h4>
-            <input type="range" min="290" max="3500" v-model="filtroPrecio">
-            <div class="price-label">Precio: 290$ – {{filtroPrecio}}$</div>
+            <label class="price-sub-label">Mínimo: {{ filtroPrecioMin }}$</label>
+            <input type="range" min="290" max="3500" v-model.number="filtroPrecioMin" @input="alCambiarPrecioMin">
+            <label class="price-sub-label">Máximo: {{ filtroPrecioMax }}$</label>
+            <input type="range" min="290" max="3500" v-model.number="filtroPrecioMax" @input="alCambiarPrecioMax">
+            <div class="price-label">Precio: {{filtroPrecioMin}}$ – {{filtroPrecioMax}}$</div>
           </div>
         </div>
       </div>
@@ -38,13 +41,13 @@
         </div>
         <p v-if="productos.cargando" class="producto-vacio">Cargando productos…</p>
         <div class="cat-grid">
-          <cat-card v-for="producto in itemsGrilla" :key="producto.id" :product="producto"></cat-card>
+          <cat-card v-for="producto in itemsPagina" :key="producto.id" :product="producto"></cat-card>
         </div>
         <div v-if="!itemsGrilla.length" class="producto-vacio">No hay productos para esta categoría.</div>
-        <div class="pagination">
-          <button class="arrow-btn">‹</button>
-          <button v-for="n in 4" :key="n" :class="{active: n===1}">{{n}}</button>
-          <button class="arrow-btn">›</button>
+        <div class="pagination" v-if="totalPaginas > 1">
+          <button class="arrow-btn" :disabled="paginaActual === 1" @click="irAPagina(paginaActual - 1)">‹</button>
+          <button v-for="n in totalPaginas" :key="n" :class="{active: n === paginaActual}" @click="irAPagina(n)">{{n}}</button>
+          <button class="arrow-btn" :disabled="paginaActual === totalPaginas" @click="irAPagina(paginaActual + 1)">›</button>
         </div>
       </div>
     </div>
@@ -57,6 +60,9 @@ import CatCard from '../components/CatCard.vue';
 import api from '../Api/api.js';
 import { useProductosStore } from '../stores/productos.js';
 
+// Cantidad máxima de productos que se muestran por página de catálogo.
+const PRODUCTOS_POR_PAGINA = 16;
+
 export default {
   name: 'CategoriaView',
   components: { StoreHeader, CatCard },
@@ -65,15 +71,19 @@ export default {
       productos: useProductosStore(),
       categorias: [],
       categoriaSeleccionada: null,
-      filtroPrecio: 4000,
-      ordenarPor: 'menor'
+      filtroPrecioMin: 290,
+      filtroPrecioMax: 3500,
+      ordenarPor: 'menor',
+      paginaActual: 1
     };
   },
   computed: {
     // Filtra primero por precio y luego, si hay una categoría seleccionada,
     // deja solo los productos que pertenecen a esa categoría.
     itemsGrilla() {
-      let lista = this.productos.lista.filter(p => p.price <= this.filtroPrecio);
+      let lista = this.productos.lista.filter(
+        p => p.price >= this.filtroPrecioMin && p.price <= this.filtroPrecioMax
+      );
 
       if (this.categoriaSeleccionada) {
         lista = lista.filter((producto) => {
@@ -88,6 +98,15 @@ export default {
       if (this.ordenarPor === 'mayor') ordenada.sort((a, b) => b.price - a.price);
       if (this.ordenarPor === 'vendidos') ordenada.sort((a, b) => Number(b.stock || 0) - Number(a.stock || 0));
       return ordenada;
+    },
+    // Los botones de paginación se arman según la cantidad real de
+    // productos filtrados, no un número fijo.
+    totalPaginas() {
+      return Math.max(1, Math.ceil(this.itemsGrilla.length / PRODUCTOS_POR_PAGINA));
+    },
+    itemsPagina() {
+      const desde = (this.paginaActual - 1) * PRODUCTOS_POR_PAGINA;
+      return this.itemsGrilla.slice(desde, desde + PRODUCTOS_POR_PAGINA);
     }
   },
   watch: {
@@ -97,7 +116,18 @@ export default {
       immediate: true,
       handler(nuevoValor) {
         this.categoriaSeleccionada = nuevoValor ? String(nuevoValor) : null;
+        this.paginaActual = 1;
       }
+    },
+    // Si cambia cualquier filtro u orden, volvemos a la página 1: si no,
+    // se podría quedar en una página que ya no tiene productos.
+    filtroPrecioMin() { this.paginaActual = 1; },
+    filtroPrecioMax() { this.paginaActual = 1; },
+    ordenarPor() { this.paginaActual = 1; },
+    // Por si el filtro deja menos páginas de las que había, evita quedar
+    // "varado" en una página que ya no existe.
+    totalPaginas(nuevoTotal) {
+      if (this.paginaActual > nuevoTotal) this.paginaActual = nuevoTotal;
     }
   },
   async mounted() {
@@ -120,6 +150,19 @@ export default {
       this.categoriaSeleccionada = categoriaId ? String(categoriaId) : null;
       const query = categoriaId ? { categoria: String(categoriaId) } : {};
       this.$router.push({ name: 'categoria', query }).catch(() => {});
+    },
+    // El mínimo nunca puede pasar al máximo, y viceversa: si se cruzan,
+    // el otro extremo se acomoda solo.
+    alCambiarPrecioMin() {
+      if (this.filtroPrecioMin > this.filtroPrecioMax) this.filtroPrecioMax = this.filtroPrecioMin;
+    },
+    alCambiarPrecioMax() {
+      if (this.filtroPrecioMax < this.filtroPrecioMin) this.filtroPrecioMin = this.filtroPrecioMax;
+    },
+    irAPagina(n) {
+      if (n < 1 || n > this.totalPaginas) return;
+      this.paginaActual = n;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 };

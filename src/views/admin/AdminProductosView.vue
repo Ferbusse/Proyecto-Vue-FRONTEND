@@ -16,9 +16,9 @@
               <button
                 type="button"
                 :disabled="!seleccionados.length"
-                :title="seleccionados.length ? 'Duplicar seleccionados' : 'Seleccioná al menos un producto'"
-                @click="duplicarSeleccionados"
-              >📄</button>
+                :title="seleccionados.length ? 'Archivar seleccionados' : 'Seleccioná al menos un producto'"
+                @click="archivarSeleccionados"
+              >🗄</button>
               <button type="button" title="Agregar producto" @click="abrirParaCrear">＋</button>
             </div>
             <div class="select-all">
@@ -27,12 +27,14 @@
                 Seleccionar todos
               </label>
               <span v-if="seleccionados.length" class="select-count">({{ seleccionados.length }} seleccionados)</span>
+              <router-link :to="{name:'admin-productos-archivados'}" class="cal-hoy-btn" style="margin-left:14px;">Ver archivados</router-link>
             </div>
           </div>
 
           <div class="admin-header-row">
             <div class="administrar-h">Producto</div>
             <div class="col">Valor total (UYU)</div><div class="col">Categoría</div><div class="col">Stock</div><div class="col">ID</div>
+            <div class="thumb-spacer"></div><div class="chk-spacer"></div>
           </div>
 
           <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando productos…</p>
@@ -80,7 +82,7 @@
                 <div class="imagen-picker-controles">
                   <input id="prod-imagen" type="file" accept="image/*" @change="alElegirImagen">
                   <button v-if="previewImagen" type="button" class="imagen-quitar" @click="quitarImagen">Quitar imagen</button>
-                  <p class="imagen-nota">JPG o PNG. Si no elegís nada, se muestra un ícono genérico.</p>
+                  <p class="imagen-nota">JPG, PNG o WEBP. Se optimiza automáticamente para ocupar menos espacio.</p>
                 </div>
               </div>
             </div>
@@ -272,13 +274,55 @@ export default {
     },
 
     // -- imagen --
-    alElegirImagen(evento) {
+    async alElegirImagen(evento) {
       const archivo = evento.target.files?.[0];
       if (!archivo) return;
-      this.archivoImagen = archivo;
-      this.sacarImagenExistente = false;
-      if (this.previewImagen) URL.revokeObjectURL(this.previewImagen);
-      this.previewImagen = URL.createObjectURL(archivo);
+
+      try {
+        const imagenOptimizada = await this.optimizarImagen(archivo);
+        this.archivoImagen = imagenOptimizada;
+        this.sacarImagenExistente = false;
+        if (this.previewImagen) URL.revokeObjectURL(this.previewImagen);
+        this.previewImagen = URL.createObjectURL(imagenOptimizada);
+      } catch (error) {
+        console.error('No se pudo optimizar la imagen:', error);
+        this.archivoImagen = archivo;
+        this.sacarImagenExistente = false;
+        if (this.previewImagen) URL.revokeObjectURL(this.previewImagen);
+        this.previewImagen = URL.createObjectURL(archivo);
+      }
+    },
+    optimizarImagen(archivo) {
+      const MAX_DIMENSION = 1600;
+      const CALIDAD = 0.82;
+
+      return new Promise((resolve, reject) => {
+        const imagen = new Image();
+        const url = URL.createObjectURL(archivo);
+        imagen.onload = () => {
+          URL.revokeObjectURL(url);
+          const escala = Math.min(1, MAX_DIMENSION / Math.max(imagen.width, imagen.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(imagen.width * escala));
+          canvas.height = Math.max(1, Math.round(imagen.height * escala));
+          canvas.getContext('2d').drawImage(imagen, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('El navegador no pudo comprimir la imagen.'));
+              return;
+            }
+            resolve(new File([blob], `${archivo.name.replace(/\.[^.]+$/, '')}.jpg`, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            }));
+          }, 'image/jpeg', CALIDAD);
+        };
+        imagen.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error('El archivo no es una imagen válida.'));
+        };
+        imagen.src = url;
+      });
     },
     quitarImagen() {
       this.archivoImagen = null;
@@ -412,7 +456,7 @@ export default {
       }
     },
 
-    // -- selección: eliminar / duplicar --
+    // -- selección: eliminar / archivar --
     async eliminarSeleccionados() {
       if (!this.seleccionados.length) return;
       const cantidad = this.seleccionados.length;
@@ -429,28 +473,20 @@ export default {
         this.error = 'No se pudieron eliminar algunos productos.';
       }
     },
-    async duplicarSeleccionados() {
+    async archivarSeleccionados() {
       if (!this.seleccionados.length) return;
 
       this.error = '';
       try {
-        const original = this.productos.filter(p => this.seleccionados.includes(p.id));
-        await Promise.all(original.map(producto => api.post('/productos', {
-          nombre: producto.nombre + ' (copia)',
-          descripcion: producto.descripcion || '',
-          precio_compra: producto.precio_compra,
-          precio_venta: producto.precio_venta,
-          stock: producto.stock,
-          codigo_barras: '',
-          categoria_id: obtenerCategoriaIdDe(producto)
-          // la copia sale sin imagen — el admin puede subirle una
-          // propia después si quiere una distinta a la del original.
-        })));
+        // Un producto archivado deja de aparecer en la tienda y en este
+        // listado, pero sigue existiendo (se puede restaurar desde
+        // "Productos archivados"). Por eso no se borra, solo se marca.
+        await Promise.all(this.seleccionados.map(id => api.put(`/productos/${id}`, { archivado: true })));
         this.seleccionados = [];
         await this.cargarProductos();
       } catch (requestError) {
-        console.error('Error al duplicar:', requestError);
-        this.error = 'No se pudieron duplicar algunos productos.';
+        console.error('Error al archivar:', requestError);
+        this.error = 'No se pudieron archivar algunos productos.';
       }
     }
   }

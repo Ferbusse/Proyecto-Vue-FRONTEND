@@ -2,12 +2,18 @@
   <div class="banner-slider" @mouseenter="detener" @mouseleave="reproducir">
     <button class="arrow left" @click="anteriorManual">‹</button>
     <div class="banner-track" :style="{transform: 'translateX(-' + (indice*100) + '%)'}">
-      <div class="banner" :class="diapositiva.clase" v-for="(diapositiva, i) in diapositivas" :key="i">
+      <div
+        class="banner"
+        :class="[diapositiva.clase, {'has-image': !!diapositiva.imagenUrl}]"
+        :style="diapositiva.imagenUrl ? {backgroundImage: 'url(' + diapositiva.imagenUrl + ')'} : {}"
+        v-for="(diapositiva, i) in diapositivas" :key="i"
+      >
         <div class="banner-text">
           <p class="eyebrow">{{ diapositiva.etiqueta }}</p>
           <h1 v-html="diapositiva.titulo"></h1>
           <p>{{ diapositiva.subtitulo }}</p>
         </div>
+        <template v-if="!diapositiva.imagenUrl">
         <svg class="banner-icon" viewBox="0 0 100 100" v-if="diapositiva.icono==='tag'">
           <circle cx="50" cy="50" r="46" fill="rgba(255,255,255,.08)"/>
           <path d="M30 20h30a6 6 0 0 1 6 6v48a6 6 0 0 1-6 6H30a6 6 0 0 1-6-6V26a6 6 0 0 1 6-6z" fill="#fff" opacity=".95"/>
@@ -36,6 +42,7 @@
           <circle cx="32" cy="72" r="7" fill="#14208c"/><circle cx="76" cy="72" r="7" fill="#14208c"/>
           <circle cx="32" cy="72" r="3" fill="#fff"/><circle cx="76" cy="72" r="3" fill="#fff"/>
         </svg>
+        </template>
       </div>
     </div>
     <button class="arrow right" @click="siguienteManual">›</button>
@@ -46,30 +53,69 @@
 </template>
 
 <script>
+import api from '../Api/api.js';
+
 // Carrusel del banner: cambia de diapositiva sola cada 4.2s y se puede
 // controlar con las flechas o los puntos. Se pausa mientras el mouse
 // está encima.
+//
+// Las diapositivas se traen del backend (así el admin las puede editar
+// desde /admin/banner), pero arrancamos con estas 4 fijas como
+// contenido de respaldo: se ven de entrada mientras carga el pedido, y
+// si el backend no responde (o todavía no hay banners activos) el
+// carrusel se queda con ellas en vez de mostrarse vacío.
+const DIAPOSITIVAS_RESPALDO = [
+  { clase: 'banner-slide-1', icono: 'tag',        etiqueta: 'OFERTA DE LA SEMANA',   titulo: 'Hasta 40% OFF<br>en fundas y cargadores', subtitulo: 'Renová tus accesorios al mejor precio de la zona.' },
+  { clase: 'banner-slide-2', icono: 'headphones', etiqueta: 'NUEVO INGRESO',         titulo: 'Auriculares<br>inalámbricos',             subtitulo: 'Sonido envolvente, batería de larga duración.' },
+  { clase: 'banner-slide-3', icono: 'bolt',        etiqueta: 'CALIDAD GARANTIZADA',   titulo: 'Carga rápida<br>para tu celular',         subtitulo: 'Cargadores originales con garantía de 12 meses.' },
+  { clase: 'banner-slide-4', icono: 'truck',       etiqueta: 'ENVÍOS A TODO EL PAÍS', titulo: 'Recibí tu pedido<br>en 24-48hs',          subtitulo: 'Comprá online y seguí tu envío en tiempo real.' }
+];
+
+// Arma la URL completa de la imagen del banner: el backend guarda solo
+// la ruta relativa dentro del disco público de Laravel.
+function obtenerUrlImagen(banner) {
+  if (!banner || !banner.imagen) return null;
+  if (/^https?:\/\//i.test(banner.imagen)) return banner.imagen;
+  const origen = api.defaults.baseURL.replace(/\/api\/?$/, '');
+  return `${origen}/storage/${banner.imagen.replace(/^\/+/, '')}`;
+}
+
 export default {
   name: 'BannerSlider',
   data() {
     return {
       indice: 0,
       temporizador: null,
-      diapositivas: [
-        { clase: 'banner-slide-1', icono: 'tag',        etiqueta: 'OFERTA DE LA SEMANA',   titulo: 'Hasta 40% OFF<br>en fundas y cargadores', subtitulo: 'Renová tus accesorios al mejor precio de la zona.' },
-        { clase: 'banner-slide-2', icono: 'headphones', etiqueta: 'NUEVO INGRESO',         titulo: 'Auriculares<br>inalámbricos',             subtitulo: 'Sonido envolvente, batería de larga duración.' },
-        { clase: 'banner-slide-3', icono: 'bolt',        etiqueta: 'CALIDAD GARANTIZADA',   titulo: 'Carga rápida<br>para tu celular',         subtitulo: 'Cargadores originales con garantía de 12 meses.' },
-        { clase: 'banner-slide-4', icono: 'truck',       etiqueta: 'ENVÍOS A TODO EL PAÍS', titulo: 'Recibí tu pedido<br>en 24-48hs',          subtitulo: 'Comprá online y seguí tu envío en tiempo real.' }
-      ]
+      diapositivas: DIAPOSITIVAS_RESPALDO
     };
   },
-  mounted() {
+  async mounted() {
+    await this.cargarBanners();
     this.reproducir();
   },
   beforeUnmount() {
     clearInterval(this.temporizador);
   },
   methods: {
+    async cargarBanners() {
+      try {
+        const response = await api.get('/banners');
+        const banners = (response.data || []).map(b => ({
+          clase: 'banner-slide-' + b.color,
+          icono: b.icono,
+          etiqueta: b.etiqueta,
+          titulo: b.titulo,
+          subtitulo: b.subtitulo,
+          imagenUrl: obtenerUrlImagen(b)
+        }));
+        if (banners.length) {
+          this.diapositivas = banners;
+          this.indice = 0;
+        }
+      } catch (error) {
+        console.error('No se pudieron cargar los banners del backend, uso los de respaldo:', error);
+      }
+    },
     // mueve el carrusel a la diapositiva "i", dando la vuelta al llegar al final
     irA(i) {
       this.indice = (i + this.diapositivas.length) % this.diapositivas.length;

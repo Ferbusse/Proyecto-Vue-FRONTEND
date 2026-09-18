@@ -4,9 +4,15 @@
     <div class="auth-card">
       <router-link class="modal-close" :to="{name:'inicio'}">✕</router-link>
       <h1>Registrarse</h1>
-      <form @submit.prevent="registrar">
-      <div class="auth-field"><label>Correo electrónico:*</label><input v-model="form.email" type="email" required></div>
-      <div class="auth-field"><label>Nombre de usuario:*</label><input v-model="form.name" type="text" required></div>
+      <form @submit.prevent="continuar">
+      <div class="auth-field">
+        <label>Correo electrónico:*</label>
+        <input v-model="form.email" type="email" required>
+      </div>
+      <div class="auth-field">
+        <label>Nombre de usuario:*</label>
+        <input v-model="form.name" type="text" required>
+      </div>
       <div class="auth-field">
         <label>Contraseña:*</label>
         <input v-model="form.password" :type="verClave1 ? 'text':'password'" minlength="6" required>
@@ -18,30 +24,8 @@
         <button class="toggle-pass" type="button" @click="verClave2=!verClave2">👁</button>
       </div>
 
-      <!-- Código de verificación — por ahora es solo visual, todavía no
-           se manda ni se valida contra nada. -->
-      <div class="auth-field">
-        <label>Código de verificación:</label>
-        <p class="auth-codigo-nota">Te enviamos un código de 6 dígitos a tu correo electrónico.</p>
-        <div class="auth-codigo-cajas">
-          <input
-            v-for="(digito, indice) in codigoVerificacion"
-            :key="indice"
-            :ref="'codigoInput' + indice"
-            v-model="codigoVerificacion[indice]"
-            type="text"
-            inputmode="numeric"
-            maxlength="1"
-            class="auth-codigo-caja"
-            @input="alEscribirDigito(indice, $event)"
-            @keydown.backspace="alBorrarDigito(indice, $event)"
-          >
-        </div>
-        <button type="button" class="link-reenviar" @click="avisoDemo('Te reenviamos el código')">Reenviar código</button>
-      </div>
-
       <p v-if="error" class="auth-error">{{ error }}</p>
-      <button class="auth-submit" type="submit" :disabled="cargando">{{ cargando ? 'Registrando...' : 'Registrarse' }}</button>
+      <button class="auth-submit" type="submit" :disabled="cargando">{{ cargando ? 'Enviando código...' : 'Registrarse' }}</button>
       </form>
       <div class="auth-switch">En cambio... <router-link :to="{name:'login'}">Iniciar Sesión</router-link></div>
     </div>
@@ -51,6 +35,7 @@
 
 <script>
 import apiClient from '../Api/api.js';
+import { useRegistroStore } from '../stores/registro.js';
 
 export default {
   name: 'RegistroView',
@@ -65,30 +50,28 @@ export default {
         email: '',
         password: '',
         password_confirmation: ''
-      },
-      // Código de verificación: por ahora solo visual, 6 casilleros
-      // vacíos que no se mandan ni se validan todavía.
-      codigoVerificacion: ['', '', '', '', '', '']
+      }
     };
   },
+  mounted() {
+    // Si el usuario ya había llegado a la pantalla del código y volvió
+    // para atrás, le repoblamos lo que había tipeado en vez de
+    // hacerlo empezar de cero (la contraseña la volvemos a pedir por
+    // las dudas, así que esa no se restaura).
+    const pendientes = useRegistroStore().datosPendientes;
+    if (pendientes) {
+      this.form.name = pendientes.name;
+      this.form.email = pendientes.email;
+    }
+  },
   methods: {
-    avisoDemo(msg) { alert(msg); },
-    alEscribirDigito(indice, evento) {
-      // deja solo un dígito por casillero, y pasa solo al siguiente
-      const valor = evento.target.value.replace(/\D/g, '').slice(0, 1);
-      this.codigoVerificacion[indice] = valor;
-      if (valor && indice < this.codigoVerificacion.length - 1) {
-        this.$refs['codigoInput' + (indice + 1)]?.[0]?.focus();
-      }
-    },
-    alBorrarDigito(indice, evento) {
-      // si el casillero ya está vacío y apretás borrar, vuelve al anterior
-      if (!this.codigoVerificacion[indice] && indice > 0) {
-        this.$refs['codigoInput' + (indice - 1)]?.[0]?.focus();
-      }
-    },
-    async registrar() {
+    // Antes acá se pedía el código y se registraba todo en la misma
+    // pantalla. Ahora este paso solo valida los datos, dispara el
+    // envío del código por mail, y manda a la persona a la vista
+    // propia donde lo completa.
+    async continuar() {
       this.error = '';
+
       if (this.form.password !== this.form.password_confirmation) {
         this.error = 'Las contraseñas no coinciden.';
         return;
@@ -96,15 +79,14 @@ export default {
 
       this.cargando = true;
       try {
-        const response = await apiClient.post('/usuarios/registro', this.form);
-        localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('auth_user', JSON.stringify(response.data.data));
-        await this.$router.push({ name: 'inicio' });
+        await apiClient.post('/verification/send', { email: this.form.email });
+
+        useRegistroStore().guardarDatosPendientes({ ...this.form });
+        await this.$router.push({ name: 'registro-verificar' });
       } catch (error) {
+        const mensajeError = error.response?.data?.message;
         const errores = error.response?.data?.errors;
-        this.error = errores
-          ? Object.values(errores).flat()[0]
-          : 'No se pudo crear el usuario. Comprueba que Laravel esté ejecutándose.';
+        this.error = errores ? Object.values(errores).flat()[0] : (mensajeError || 'Hubo un error al solicitar el código.');
       } finally {
         this.cargando = false;
       }

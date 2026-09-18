@@ -3,25 +3,31 @@
     <router-link class="logo" :to="{name:'inicio'}"><img class="logo-img" :src="logoUrl" alt="Zona Móvil" @error="$event.target.style.display='none'"></router-link>
     <div class="search-box" :class="{'show-results': busquedaAbierta}" @focusin="busquedaAbierta=true" @focusout="alPerderFoco">
       <div class="search-row">
-        <input class="search-input" type="text" placeholder="¿Que estas buscando hoy?">
-        <button class="search-btn">🔍</button>
+        <input class="search-input" type="text" placeholder="¿Que estas buscando hoy?" v-model="busqueda" @keyup.enter="buscar">
+        <button class="search-btn" @click="buscar">🔍</button>
       </div>
       <div class="search-results">
         <div class="search-result-item" v-for="producto in resultadosBusqueda" :key="producto.id" @click="$router.push({name:'producto', params:{id: producto.id}})">
           <span class="name">{{ producto.name }}</span><span class="price">{{ formatearPrecio(producto.price) }}</span><div class="thumb img-placeholder"><img v-if="producto.imagenUrl" :src="producto.imagenUrl" :alt="producto.name" @error="$event.target.style.display='none'"><span v-else-if="producto.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ producto.icono }}</span></div>
         </div>
+        <div v-if="busqueda.trim() && !resultadosBusqueda.length" class="search-result-item search-sin-resultados">
+          Sin resultados para "{{ busqueda.trim() }}"
+        </div>
       </div>
     </div>
     <div class="account">
-      <div class="user-icon">👤</div>
-      <!-- si el usuario esta logueado, mostramos su nombre y el enlace al perfil -->
-      <div v-if="usuario" class="user-profile-link">
-        <router-link :to="{name:'perfil'}">{{ usuario.name }}</router-link>
-      </div>
-      <div v-else class="links">
-        <router-link :to="{name:'login'}">Iniciar sesión</router-link>
-        <router-link :to="{name:'registro'}">Registrarse</router-link>
-      </div>
+      <!-- si el usuario esta logueado, el icono y el nombre llevan los dos al perfil -->
+      <router-link v-if="usuario" class="user-profile-link" :to="{name:'perfil'}">
+        <div class="user-icon">👤</div>
+        <span>{{ usuario.name }}</span>
+      </router-link>
+      <template v-else>
+        <div class="user-icon">👤</div>
+        <div class="links">
+          <router-link :to="{name:'login'}">Iniciar sesión</router-link>
+          <router-link :to="{name:'registro'}">Registrarse</router-link>
+        </div>
+      </template>
     </div>
   </div>
   <div class="navbar">
@@ -29,6 +35,15 @@
       <button class="categorias-btn" @click="categoriasAbiertas = !categoriasAbiertas"><span class="bars">≡</span> CATEGORÍAS ▾</button>
       <div class="mega-menu">
         <div class="mega-menu-list">
+          <div
+            class="mega-menu-item"
+            :class="{active: categoriaActiva===null}"
+            @mouseenter="categoriaActiva = null"
+            @click="irACategoria(null)"
+          >
+            <span class="mm-icon">▦</span>
+            <span class="mm-label">Todas las categorías</span>
+          </div>
           <div
             class="mega-menu-item"
             v-for="cat in categoriasMenu"
@@ -75,6 +90,7 @@ export default {
       carrito: useCarritoStore(),
       productos: useProductosStore(),
       logoUrl: logo,
+      busqueda: '',
       busquedaAbierta: false,
       categoriasAbiertas: false,
       usuario: null,
@@ -87,7 +103,16 @@ export default {
       return this.categoriasMenu.find(c => c.id === this.categoriaActiva);
     },
     resultadosBusqueda() {
-      return this.productos.lista.slice(0, 2);
+      const termino = this.busqueda.trim().toLowerCase();
+      if (!termino) return [];
+      return this.productos.lista
+        .filter(producto => {
+          const nombre = (producto.name || '').toLowerCase();
+          const descripcion = (producto.descripcion || '').toLowerCase();
+          const categoria = (producto.categoriaNombre || '').toLowerCase();
+          return nombre.includes(termino) || descripcion.includes(termino) || categoria.includes(termino);
+        })
+        .slice(0, 8);
     }
   },
   async mounted() {
@@ -130,6 +155,16 @@ export default {
     },
     alPerderFoco() {
       setTimeout(() => { this.busquedaAbierta = false; }, 150);
+    },
+    buscar() {
+      if (!this.busqueda.trim()) return;
+      this.busquedaAbierta = true;
+      // Si el texto matchea un solo producto, vamos directo a su ficha.
+      if (this.resultadosBusqueda.length === 1) {
+        this.$router.push({ name: 'producto', params: { id: this.resultadosBusqueda[0].id } });
+        this.busqueda = '';
+        this.busquedaAbierta = false;
+      }
     },
     irACategoria(categoriaId = null) {
       // Si se hace click en una categoría del menú, llevamos al usuario a la

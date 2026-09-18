@@ -23,7 +23,6 @@
 
 <script>
 import apiClient from '../Api/api.js';
-import { intentarLoginDemo } from '../Api/demoAuth.js';
 
 export default {
   name: 'LoginView',
@@ -39,21 +38,20 @@ export default {
     async iniciarSesion() {
       this.error = '';
 
-      // Si lo que escribió coincide con la cuenta de prueba (ver
-      // src/Api/demoAuth.js), entramos directo sin tocar el backend.
-      // En modo demo abrimos el panel admin para poder probar el flujo
-      // administrativo sin tener que navegar desde la home.
-      if (intentarLoginDemo(this.form.email, this.form.password)) {
-        await this.$router.push({ name: 'admin-panel' });
-        return;
-      }
-
       this.cargando = true;
       try {
-        const response = await apiClient.post('/usuarios/login', this.form);
+        // El backend ya no necesita que le digamos si es un login de
+        // administrador: decide solo, según a qué cuenta pertenece el
+        // email (fantasma, dueño real o cliente).
+        const response = await apiClient.post('/usuarios/login', {
+          email: this.form.email,
+          password: this.form.password
+        });
+        const usuario = response.data.data;
         localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('auth_user', JSON.stringify(response.data.data));
-        await this.$router.push({ name: 'inicio' });
+        localStorage.setItem('auth_user', JSON.stringify(usuario));
+        const esAdmin = usuario.ghost === true || usuario.role === 'dueño';
+        await this.$router.push(esAdmin ? { name: 'admin-panel' } : { name: 'inicio' });
       } catch (error) {
         this.error = error.response?.data?.message || 'No se pudo iniciar sesión.';
       } finally {

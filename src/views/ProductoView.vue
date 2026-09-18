@@ -13,8 +13,8 @@
         <h4 style="color:var(--azul); font-size:24px; font-weight:800; margin:4px 0 14px;">{{ formatearPrecio(producto.price) }}</h4>
         <h4>Especificaciones</h4>
         <div class="spec-table"><div class="c1"></div><div class="c2"></div></div>
-        <button class="wishlist" :class="{active: favorito}" @click="favorito=!favorito">
-          <span class="heart">♥</span> Añadir a deseados
+        <button class="wishlist" :class="{active: favorito}" @click="alternarFavorito">
+          <span class="heart">♥</span> {{ favorito ? 'Quitar de deseados' : 'Añadir a deseados' }}
         </button>
         <br>
         <button class="btn-primary" @click="agregar">Añadir al carrito</button>
@@ -22,7 +22,7 @@
     </div>
     <div class="pd-desc">
       <h4>Descripción:</h4>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. laborum</p>
+      <p>{{ producto.descripcion || 'Este producto todavía no tiene una descripción.' }}</p>
       <div class="pd-related" v-if="productosRelacionados.length">
         <h4>Tal vez te interese...</h4>
         <div class="products-wrap" style="margin:14px 0;">
@@ -44,6 +44,7 @@ import ProductCard from '../components/ProductCard.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import { formatearPrecio } from '../catalog.js';
 import { useCarritoStore } from '../stores/carrito.js';
+import { useFavoritosStore } from '../stores/favoritos.js';
 import { useProductosStore } from '../stores/productos.js';
 
 export default {
@@ -56,19 +57,38 @@ export default {
   data() {
     return {
       carrito: useCarritoStore(),
+      favoritos: useFavoritosStore(),
       productos: useProductosStore(),
-      favorito: false,
       mostrarAviso: false
     };
   },
   computed: {
     producto() { return this.productos.obtenerProducto(this.id); },
+    favorito() { return this.favoritos.esFavorito(this.id); },
     productosRelacionados() {
-      return this.productos.lista.filter(p => p.id !== String(this.id)).slice(0, 3);
+      const otros = this.productos.lista.filter(p => p.id !== String(this.id));
+      if (!this.producto) return otros.slice(0, 3);
+
+      // Primero los de la misma categoría (si el producto tiene una);
+      // si no alcanzan para completar 3, rellenamos con el resto del
+      // catálogo para que la sección no se vea escasa.
+      const categoriaIds = this.producto.categoriaIds?.length ? this.producto.categoriaIds : [this.producto.categoriaId].filter(Boolean);
+      const mismaCategoria = categoriaIds.length
+        ? otros.filter(p => (p.categoriaIds?.length ? p.categoriaIds : [p.categoriaId]).some(id => categoriaIds.includes(id)))
+        : [];
+
+      if (mismaCategoria.length >= 3) return mismaCategoria.slice(0, 3);
+
+      const idsYaElegidos = new Set(mismaCategoria.map(p => p.id));
+      const relleno = otros.filter(p => !idsYaElegidos.has(p.id));
+      return [...mismaCategoria, ...relleno].slice(0, 3);
     }
   },
   methods: {
     formatearPrecio,
+    alternarFavorito() {
+      this.favoritos.alternar(this.id);
+    },
     agregar() {
       this.carrito.agregar(this.id);
       this.mostrarAviso = true;

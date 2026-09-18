@@ -43,6 +43,7 @@
           <div class="admin-header-row">
             <div class="administrar-h">Orden</div>
             <div class="col">Cliente</div><div class="col">Fecha</div><div class="col">Total (UYU)</div><div class="col">Estado</div>
+            <div class="chk-spacer"></div>
           </div>
 
           <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando órdenes…</p>

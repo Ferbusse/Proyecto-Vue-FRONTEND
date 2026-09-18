@@ -2,6 +2,15 @@ import { defineStore } from 'pinia';
 import { formatearPrecio } from '../catalog.js';
 import { useProductosStore } from './productos.js';
 
+function leerCarritoGuardado() {
+  try {
+    const guardado = JSON.parse(localStorage.getItem('carrito_items') || '{}');
+    return guardado && typeof guardado === 'object' ? guardado : {};
+  } catch {
+    return {};
+  }
+}
+
 // Store de Pinia: todo lo relacionado al carrito y al flujo de pago
 // (antes vivía como estado global manual en App.vue, compartido con
 // provide()/inject()). Ahora cualquier componente lo usa así:
@@ -16,7 +25,7 @@ import { useProductosStore } from './productos.js';
 // llama (el componente) es el que decide navegar con $router.
 export const useCarritoStore = defineStore('carrito', {
   state: () => ({
-    items: {},                    // { idProducto: cantidad }
+    items: leerCarritoGuardado(), // { idProducto: cantidad }
     abierto: false,               // panel deslizante del carrito
     modalPago: false,
     modalTarjeta: false,
@@ -51,19 +60,26 @@ export const useCarritoStore = defineStore('carrito', {
   },
 
   actions: {
+    persistir() {
+      localStorage.setItem('carrito_items', JSON.stringify(this.items));
+    },
     agregar(id) {
       this.items[id] = (this.items[id] || 0) + 1;
+      this.persistir();
     },
     cambiarCantidad(id, delta) {
       if (!this.items[id]) return;
       this.items[id] += delta;
       if (this.items[id] <= 0) delete this.items[id];
+      this.persistir();
     },
     quitar(id) {
       delete this.items[id];
+      this.persistir();
     },
     vaciar() {
       this.items = {};
+      this.persistir();
     },
     abrir() { this.abierto = true; },
     cerrar() { this.abierto = false; },

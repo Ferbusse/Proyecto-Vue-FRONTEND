@@ -13,7 +13,7 @@ import { CATALOGO } from '../catalog.js';
 // la API (sacándole el "/api" del final) más "/storage/", que es
 // donde Laravel sirve los archivos subidos por defecto.
 export function obtenerUrlImagen(productoBackend) {
-  const urlCompleta = productoBackend.imagen_url || productoBackend.foto_url || productoBackend.image_url;
+  const urlCompleta = productoBackend.imagenUrl || productoBackend.imagen_url || productoBackend.foto_url || productoBackend.image_url;
   if (urlCompleta) return urlCompleta;
 
   const rutaRelativa = productoBackend.imagen || productoBackend.foto || productoBackend.image || productoBackend.ruta_imagen;
@@ -21,11 +21,14 @@ export function obtenerUrlImagen(productoBackend) {
     // si ya viene con http/https, no hace falta armar nada
     if (/^https?:\/\//i.test(rutaRelativa)) return rutaRelativa;
     const origen = api.defaults.baseURL.replace(/\/api\/?$/, '');
-    return `${origen}/storage/${rutaRelativa}`;
+    return `${origen}/storage/${rutaRelativa.replace(/^\/+/, '')}`;
   }
   return null;
 }
 
+// El backend conserva el archivo en storage y la base de datos solo guarda
+// su ruta; antes de enviarlo, el formulario lo reduce a JPG para ahorrar
+// espacio y ancho de banda.
 // El backend usa nombres de campo distintos a los que ya usa toda la
 // tienda (nombre/precio_venta en vez de name/price). Los normalizamos
 // acá, una sola vez, así el resto de los componentes no tiene que
@@ -40,6 +43,7 @@ function normalizar(productoBackend) {
   return {
     id: String(productoBackend.id),
     name: productoBackend.nombre,
+    descripcion: productoBackend.descripcion || '',
     price: Number(productoBackend.precio_venta),
     stock: productoBackend.stock,
     categoriaId,
@@ -86,6 +90,8 @@ export const useProductosStore = defineStore('productos', {
         console.error('No se pudieron cargar los productos del backend, uso el catálogo de ejemplo:', error);
         this.lista = CATALOGO;
         this.usandoCatalogoDemo = true;
+        // Permite que una carga posterior recupere los productos reales y sus imágenes.
+        this.cargado = false;
       } finally {
         this.cargando = false;
         this.cargado = true;

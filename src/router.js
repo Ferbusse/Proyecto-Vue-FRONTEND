@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { esSesionDemo } from './Api/demoAuth.js';
+import { esSesionAdmin } from './Api/demoAuth.js';
 
 import InicioView from './views/InicioView.vue';
 import CategoriaView from './views/CategoriaView.vue';
@@ -7,6 +7,7 @@ import ProductoView from './views/ProductoView.vue';
 import CheckoutView from './views/CheckoutView.vue';
 import LoginView from './views/LoginView.vue';
 import RegistroView from './views/RegistroView.vue';
+import VerificarCodigoView from './views/VerificarCodigoView.vue';
 import PerfilView from './views/PerfilView.vue';
 import PedidosView from './views/cuenta/PedidosView.vue';
 import DireccionesView from './views/cuenta/DireccionesView.vue';
@@ -14,11 +15,14 @@ import DetallesCuentaView from './views/cuenta/DetallesCuentaView.vue';
 import WishlistView from './views/cuenta/WishlistView.vue';
 import AdminPanelView from './views/admin/AdminPanelView.vue';
 import AdminProductosView from './views/admin/AdminProductosView.vue';
-// Empleados está desactivado (no se usa por ahora), pero se deja el
-// import comentado para reactivarlo fácil si hace falta más adelante.
-// import AdminEmpleadosView from './views/admin/AdminEmpleadosView.vue';
+import AdminProductosArchivadosView from './views/admin/AdminProductosArchivadosView.vue';
+import AdminEmpleadosView from './views/admin/AdminEmpleadosView.vue';
 import AdminOrdenesView from './views/admin/AdminOrdenesView.vue';
 import AdminAnaliticasView from './views/admin/AdminAnaliticasView.vue';
+import AdminCalendarioView from './views/admin/AdminCalendarioView.vue';
+import AdminEnviosView from './views/admin/AdminEnviosView.vue';
+import AdminBannersView from './views/admin/AdminBannersView.vue';
+import AdminBannersArchivadosView from './views/admin/AdminBannersArchivadosView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -33,6 +37,7 @@ const router = createRouter({
     { path: '/checkout', name: 'checkout', component: CheckoutView },
     { path: '/login', name: 'login', component: LoginView },
     { path: '/registro', name: 'registro', component: RegistroView },
+    { path: '/registro/verificar-codigo', name: 'registro-verificar', component: VerificarCodigoView },
     { path: '/perfil', name: 'perfil', component: PerfilView },
     { path: '/perfil/pedidos', name: 'cuenta-pedidos', component: PedidosView },
     { path: '/perfil/direcciones', name: 'cuenta-direcciones', component: DireccionesView },
@@ -40,9 +45,14 @@ const router = createRouter({
     { path: '/perfil/wishlist', name: 'cuenta-wishlist', component: WishlistView },
     { path: '/admin', name: 'admin-panel', component: AdminPanelView },
     { path: '/admin/productos', name: 'admin-productos', component: AdminProductosView },
-    // { path: '/admin/empleados', name: 'admin-empleados', component: AdminEmpleadosView },
+    { path: '/admin/productos/archivados', name: 'admin-productos-archivados', component: AdminProductosArchivadosView },
+    { path: '/admin/empleados', name: 'admin-empleados', component: AdminEmpleadosView },
     { path: '/admin/ordenes', name: 'admin-ordenes', component: AdminOrdenesView },
-    { path: '/admin/analiticas', name: 'admin-analiticas', component: AdminAnaliticasView }
+    { path: '/admin/analiticas', name: 'admin-analiticas', component: AdminAnaliticasView },
+    { path: '/admin/calendario', name: 'admin-calendario', component: AdminCalendarioView },
+    { path: '/admin/envios', name: 'admin-envios', component: AdminEnviosView },
+    { path: '/admin/banners', name: 'admin-banners', component: AdminBannersView },
+    { path: '/admin/banners/archivados', name: 'admin-banners-archivados', component: AdminBannersArchivadosView }
   ]
 });
 
@@ -57,7 +67,7 @@ router.beforeEach((to) => {
     return { name: 'login' };
   }
 
-  if (requiereAdmin && !esSesionDemo()) {
+  if (requiereAdmin && !esSesionAdmin()) {
     return { name: 'login' };
   }
 });

@@ -33,13 +33,13 @@
       <span>© {{ anioActual }} Zona Móvil — todos los derechos reservados</span>
       <!-- Solo se muestra este atajo para la sesión demo. Para usuarios normales
            queda oculto para no dejar un acceso administrativo visible en la home. -->
-      <router-link v-if="conAccesoAdmin && esSesionDemo()" class="admin-link" :to="{name:'admin-panel'}">Panel Administrador →</router-link>
+      <router-link v-if="conAccesoAdmin && esSesionAdmin()" class="admin-link" :to="{name:'admin-panel'}">Panel Administrador →</router-link>
     </div>
   </footer>
 </template>
 
 <script>
-import { esSesionDemo } from '../Api/demoAuth.js';
+import { esSesionAdmin } from '../Api/demoAuth.js';
 
 export default {
   name: 'SiteFooter',
@@ -49,7 +49,7 @@ export default {
     conAccesoAdmin: { type: Boolean, default: false }
   },
   data() {
-    return { anioActual: new Date().getFullYear(), esSesionDemo };
+    return { anioActual: new Date().getFullYear(), esSesionAdmin };
   }
 };
 </script>
