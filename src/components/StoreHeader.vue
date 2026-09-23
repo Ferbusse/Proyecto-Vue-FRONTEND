@@ -61,7 +61,7 @@
           <div class="mega-menu-panel-cols">
             <div class="mm-col" v-for="grupo in categoriaActivaData.subcategorias" :key="grupo.titulo">
               <h4>{{ grupo.titulo }}</h4>
-              <a v-for="item in grupo.items" :key="item" @click="irACategoria">{{ item }}</a>
+              <a v-for="item in grupo.items" :key="item" @click="irACategoria(categoriaActiva)">{{ item }}</a>
             </div>
           </div>
         </div>

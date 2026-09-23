@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      apexcharts:
+        specifier: ^7.4.0
+        version: 7.4.0
       axios:
         specifier: ^1.19.0
         version: 1.19.0(debug@4.4.3)
@@ -385,6 +388,13 @@ packages:
   agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
+
+  apex-commons@0.8.1:
+    resolution: {integrity: sha512-F7fqJVh0smeTu1d86uuRSNNZvaM/l11GNQMbu6oAiSvuXp+K8KCufg0oZTy2VQBEEipRLAdFqkHnphlVpTG0Gw==}
+
+  apexcharts@7.4.0:
+    resolution: {integrity: sha512-p7c9d44vWfR6vLyg4gZr1nNwD8dL8+BYXP1kysbDS0jZgca8YF+IVUQMtOnkGc8L4SMRHgadnPj54xbDP75tsQ==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
@@ -848,6 +858,12 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
+
+  apex-commons@0.8.1: {}
+
+  apexcharts@7.4.0:
+    dependencies:
+      apex-commons: 0.8.1
 
   asynckit@0.4.0: {}
 

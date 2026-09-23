@@ -76,8 +76,7 @@ const DIAPOSITIVAS_RESPALDO = [
 function obtenerUrlImagen(banner) {
   if (!banner || !banner.imagen) return null;
   if (/^https?:\/\//i.test(banner.imagen)) return banner.imagen;
-  const origen = api.defaults.baseURL.replace(/\/api\/?$/, '');
-  return `${origen}/storage/${banner.imagen.replace(/^\/+/, '')}`;
+  return `${api.defaults.baseURL}/banners/${banner.id}/imagen`;
 }
 
 export default {
@@ -102,6 +101,7 @@ export default {
         const response = await api.get('/banners');
         const banners = (response.data || []).map(b => ({
           clase: 'banner-slide-' + b.color,
+          id: b.id,
           icono: b.icono,
           etiqueta: b.etiqueta,
           titulo: b.titulo,
@@ -109,8 +109,10 @@ export default {
           imagenUrl: obtenerUrlImagen(b)
         }));
         if (banners.length) {
+          this.detener();
           this.diapositivas = banners;
           this.indice = 0;
+          this.reproducir();
         }
       } catch (error) {
         console.error('No se pudieron cargar los banners del backend, uso los de respaldo:', error);
@@ -122,7 +124,10 @@ export default {
     },
     siguiente() { this.irA(this.indice + 1); },
     anterior() { this.irA(this.indice - 1); },
-    reproducir() { this.temporizador = setInterval(this.siguiente, 4200); },
+    reproducir() {
+      clearInterval(this.temporizador);
+      this.temporizador = setInterval(() => this.siguiente(), 4200);
+    },
     detener() { clearInterval(this.temporizador); },
     // acciones manuales: reinician el autoplay para no cortarlo a mitad de camino
     anteriorManual() { this.anterior(); this.detener(); this.reproducir(); },

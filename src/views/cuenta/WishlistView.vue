@@ -35,7 +35,7 @@ export default {
     }
   },
   mounted() {
-    this.productos.cargar();
+    this.productos.refrescar();
   }
 };
 </script>

@@ -82,7 +82,7 @@ export default {
     // deja solo los productos que pertenecen a esa categoría.
     itemsGrilla() {
       let lista = this.productos.lista.filter(
-        p => p.price >= this.filtroPrecioMin && p.price <= this.filtroPrecioMax
+        p => !p.agotado && p.price >= this.filtroPrecioMin && p.price <= this.filtroPrecioMax
       );
 
       if (this.categoriaSeleccionada) {

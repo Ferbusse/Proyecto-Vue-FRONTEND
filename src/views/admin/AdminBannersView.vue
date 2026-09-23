@@ -15,8 +15,8 @@
               <button
                 type="button"
                 :disabled="!seleccionados.length"
-                :title="seleccionados.length ? 'Agregar seleccionados al carrusel' : 'Seleccioná al menos un banner'"
-                @click="agregarAlCarruselSeleccionados"
+                :title="seleccionados.length ? (seleccionadosVisibles ? 'Ocultar seleccionados del carrusel' : 'Mostrar seleccionados en el carrusel') : 'Seleccioná al menos un banner'"
+                @click="alternarVisibilidadSeleccionados"
               >👁</button>
               <button
                 type="button"
@@ -44,7 +44,7 @@
 
           <div class="admin-header-row">
             <div class="administrar-h">Banner</div>
-            <div class="col">Etiqueta</div><div class="col">Estado</div><div class="col">Orden</div>
+            <div class="col">Estado</div><div class="col">Orden</div>
             <div class="thumb-spacer"></div><div class="chk-spacer"></div>
           </div>
 
@@ -52,8 +52,8 @@
 
           <div class="admin-row" v-for="(banner, i) in banners" :key="banner.id">
             <a class="administrar" @click="abrirParaEditar(banner)">Administrar</a>
-            <div class="col" v-html="banner.titulo"></div>
-            <div class="col">{{ banner.etiqueta || 'Sin etiqueta' }}</div>
+            <div class="col" v-if="banner.titulo" v-html="banner.titulo"></div>
+            <div class="col texto-atenuado" v-else>Banner #{{ banner.id }}</div>
             <div class="col"><span class="estado-badge" :style="estiloEstado(banner.activo)">{{ banner.activo ? 'En el carrusel' : 'Oculto' }}</span></div>
             <div class="col orden-col">
               {{ banner.orden }}
@@ -63,10 +63,10 @@
               </span>
             </div>
             <div class="thumb img-placeholder banner-thumb" :style="!obtenerUrlImagenBanner(banner) ? {background: colorDeMuestra(banner.color)} : {}">
-              <img v-if="obtenerUrlImagenBanner(banner)" :src="obtenerUrlImagenBanner(banner)" :alt="banner.titulo" @error="$event.target.style.display='none'">
+              <img v-if="obtenerUrlImagenBanner(banner)" :src="obtenerUrlImagenBanner(banner)" :alt="banner.titulo || ('Banner #' + banner.id)" @error="$event.target.style.display='none'">
               <span v-else aria-hidden="true">{{ emojiDe(banner.icono) }}</span>
             </div>
-            <input class="chk" type="checkbox" :value="banner.id" v-model="seleccionados" :aria-label="'Seleccionar ' + banner.titulo">
+            <input class="chk" type="checkbox" :value="banner.id" v-model="seleccionados" :aria-label="'Seleccionar ' + (banner.titulo || ('banner #' + banner.id))">
           </div>
 
           <p v-if="!cargando && !banners.length && !error" class="producto-vacio">Todavía no hay banners cargados.</p>
@@ -82,7 +82,8 @@
         <form @submit.prevent="guardarBanner">
           <div class="form-row">
             <div class="form-group">
-              <label for="ban-imagen">Imagen de fondo (opcional)</label>
+              <p class="imagen-resolucion-recomendada">Resolución recomendada: 1600×500px (se ajusta para cubrir el banner en cualquier pantalla).</p>
+              <label for="ban-imagen">Imagen del banner</label>
               <div class="imagen-picker">
                 <div class="imagen-preview">
                   <img v-if="previewImagen" :src="previewImagen" alt="" @error="$event.target.style.display='none'">
@@ -91,53 +92,9 @@
                 <div class="imagen-picker-controles">
                   <input id="ban-imagen" type="file" accept="image/*" @change="alElegirImagen">
                   <button v-if="previewImagen" type="button" class="imagen-quitar" @click="quitarImagen">Quitar imagen</button>
-                  <p class="imagen-nota">Si no cargás una imagen, el banner se muestra con el color e ícono de abajo. Se optimiza automáticamente.</p>
+                  <p class="imagen-nota">Se optimiza automáticamente al guardar.</p>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="ban-etiqueta">Etiqueta (arriba del título)</label>
-              <input id="ban-etiqueta" v-model="formulario.etiqueta" type="text" placeholder="Ej: OFERTA DE LA SEMANA">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="ban-titulo">Título</label>
-              <input id="ban-titulo" v-model="formulario.titulo" type="text" placeholder="Ej: Hasta 40% OFF" required>
-              <p class="imagen-nota">Se puede usar &lt;br&gt; para forzar un salto de línea, igual que en los banners actuales.</p>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="ban-subtitulo">Subtítulo</label>
-              <input id="ban-subtitulo" v-model="formulario.subtitulo" type="text">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="ban-icono">Ícono (si no hay imagen)</label>
-              <select id="ban-icono" v-model="formulario.icono">
-                <option value="tag">🏷️ Etiqueta / oferta</option>
-                <option value="headphones">🎧 Auriculares</option>
-                <option value="bolt">⚡ Carga rápida</option>
-                <option value="truck">🚚 Envíos</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="ban-color">Color de fondo (si no hay imagen)</label>
-              <select id="ban-color" v-model.number="formulario.color">
-                <option :value="1">Azul 1</option>
-                <option :value="2">Azul 2</option>
-                <option :value="3">Azul 3</option>
-                <option :value="4">Azul 4</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="check-label"><input type="checkbox" v-model="formulario.activo"> Mostrar en el carrusel</label>
             </div>
           </div>
           <p v-if="errorFormulario" class="auth-error">{{ errorFormulario }}</p>
@@ -155,7 +112,10 @@ import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
 
-const BANNER_VACIO = { etiqueta: '', titulo: '', subtitulo: '', icono: 'tag', color: 1, activo: true };
+// El formulario ya no pide etiqueta/título/subtítulo/ícono/color: el
+// banner ahora es solo la imagen. Estos campos quedan en la base por si
+// algún banner viejo los tenía cargados, pero no se vuelven a editar acá.
+const BANNER_VACIO = {};
 
 // Mismos degradés que .banner-slide-1..4 en style.css, para que la
 // muestra de color en la tabla del admin coincida con lo que se ve en
@@ -175,8 +135,7 @@ const EMOJIS = { tag: '🏷️', headphones: '🎧', bolt: '⚡', truck: '🚚' 
 export function obtenerUrlImagenBanner(banner) {
   if (!banner || !banner.imagen) return null;
   if (/^https?:\/\//i.test(banner.imagen)) return banner.imagen;
-  const origen = api.defaults.baseURL.replace(/\/api\/?$/, '');
-  return `${origen}/storage/${banner.imagen.replace(/^\/+/, '')}`;
+  return `${api.defaults.baseURL}/banners/${banner.id}/imagen`;
 }
 
 export default {
@@ -209,6 +168,10 @@ export default {
       set(marcar) {
         this.seleccionados = marcar ? this.banners.map(b => b.id) : [];
       }
+    },
+    seleccionadosVisibles() {
+      const seleccionados = this.banners.filter(banner => this.seleccionados.includes(banner.id));
+      return seleccionados.length > 0 && seleccionados.every(banner => banner.activo);
     }
   },
   async mounted() {
@@ -319,14 +282,7 @@ export default {
     abrirParaEditar(banner) {
       this.editandoId = banner.id;
       this.errorFormulario = '';
-      this.formulario = {
-        etiqueta: banner.etiqueta || '',
-        titulo: banner.titulo,
-        subtitulo: banner.subtitulo || '',
-        icono: banner.icono,
-        color: banner.color,
-        activo: !!banner.activo
-      };
+      this.formulario = {};
       this.limpiarImagenDelFormulario();
       // si el banner ya tiene una imagen, la mostramos como vista previa
       this.previewImagen = obtenerUrlImagenBanner(banner);
@@ -337,25 +293,28 @@ export default {
       this.limpiarImagenDelFormulario();
     },
     async guardarBanner() {
+      // El único campo del formulario es la imagen; al crear, hace falta
+      // sí o sí (si no, no habría nada que mostrar en el banner).
+      if (!this.editandoId && !this.archivoImagen) {
+        this.errorFormulario = 'Subí una imagen para el banner.';
+        return;
+      }
+
       this.guardando = true;
       this.errorFormulario = '';
       try {
         // Igual que en productos: mandamos multipart/form-data para poder
-        // adjuntar la imagen. Los booleanos van como '1'/'0': si dejáramos
-        // que FormData los convierta solo, "true"/"false" como texto se
-        // guardarían mal en la columna (MySQL los interpreta como 0).
+        // adjuntar la imagen.
         const datos = new FormData();
-        Object.entries(this.formulario).forEach(([campo, valor]) => {
-          if (typeof valor === 'boolean') {
-            datos.append(campo, valor ? '1' : '0');
-          } else {
-            datos.append(campo, valor ?? '');
-          }
-        });
         if (this.archivoImagen) {
           datos.append('imagen', this.archivoImagen);
         } else if (this.sacarImagenExistente) {
           datos.append('quitar_imagen', '1');
+        }
+        if (!this.editandoId) {
+          // Como el formulario ya no tiene el casillero de "mostrar en
+          // el carrusel", un banner nuevo entra activo directamente.
+          datos.append('activo', '1');
         }
 
         if (this.editandoId) {
@@ -400,20 +359,18 @@ export default {
     },
 
     // -- selección: agregar al carrusel / eliminar / archivar --
-    async agregarAlCarruselSeleccionados() {
+    async alternarVisibilidadSeleccionados() {
       if (!this.seleccionados.length) return;
 
       this.error = '';
       try {
-        // Marca de una todos los banners tildados como visibles en el
-        // carrusel de inicio, sin tener que entrar a editarlos uno por
-        // uno.
-        await Promise.all(this.seleccionados.map(id => api.put(`/banners/${id}`, { activo: true })));
+        const activo = !this.seleccionadosVisibles;
+        await Promise.all(this.seleccionados.map(id => api.put(`/banners/${id}`, { activo })));
         this.seleccionados = [];
         await this.cargarBanners();
       } catch (requestError) {
-        console.error('Error al agregar al carrusel:', requestError);
-        this.error = 'No se pudieron agregar al carrusel algunos banners.';
+        console.error('Error al cambiar visibilidad de banners:', requestError);
+        this.error = 'No se pudo cambiar la visibilidad de algunos banners.';
       }
     },
     async eliminarSeleccionados() {

@@ -36,23 +36,28 @@ export const useCarritoStore = defineStore('carrito', {
   getters: {
     // una línea por producto en el carrito, con el producto completo + cantidad
     // (el producto sale del store de productos, así el carrito siempre
-    // muestra los datos reales, sin importar de dónde vino cada uno)
+    // muestra los datos reales, sin importar de dónde vino cada uno).
+    // Si un id guardado ya no existe en el catálogo (producto borrado,
+    // por ejemplo), se filtra en vez de mostrar una línea rota.
     lineas(state) {
       const productos = useProductosStore();
-      return Object.keys(state.items).map(id => ({
-        product: productos.obtenerProducto(id),
-        qty: state.items[id]
-      }));
+      return Object.keys(state.items)
+        .map(id => ({
+          id,
+          product: productos.obtenerProducto(id),
+          qty: state.items[id]
+        }))
+        .filter(linea => !!linea.product);
     },
     cantidad(state) {
       return Object.values(state.items).reduce((suma, qty) => suma + qty, 0);
     },
     total(state) {
       const productos = useProductosStore();
-      return Object.keys(state.items).reduce(
-        (suma, id) => suma + state.items[id] * productos.obtenerProducto(id).price,
-        0
-      );
+      return Object.keys(state.items).reduce((suma, id) => {
+        const producto = productos.obtenerProducto(id);
+        return producto ? suma + state.items[id] * producto.price : suma;
+      }, 0);
     },
     totalFormateado() {
       return formatearPrecio(this.total);
@@ -64,11 +69,26 @@ export const useCarritoStore = defineStore('carrito', {
       localStorage.setItem('carrito_items', JSON.stringify(this.items));
     },
     agregar(id) {
-      this.items[id] = (this.items[id] || 0) + 1;
+      const producto = useProductosStore().obtenerProducto(id);
+      if (!producto) return;
+
+      const stock = Number(producto.stock);
+      const cantidadActual = this.items[id] || 0;
+
+      if (Number.isFinite(stock) && (stock <= 0 || cantidadActual >= stock)) return;
+
+      this.items[id] = cantidadActual + 1;
       this.persistir();
     },
     cambiarCantidad(id, delta) {
       if (!this.items[id]) return;
+
+      const producto = useProductosStore().obtenerProducto(id);
+      if (!producto) return;
+
+      const stock = Number(producto.stock);
+      if (delta > 0 && Number.isFinite(stock) && this.items[id] >= stock) return;
+
       this.items[id] += delta;
       if (this.items[id] <= 0) delete this.items[id];
       this.persistir();

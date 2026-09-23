@@ -14,7 +14,7 @@
         <div class="admin-table-wrap">
           <div class="admin-header-row">
             <div class="administrar-h">Banner</div>
-            <div class="col">Etiqueta</div><div class="col">Orden</div><div class="col">ID</div>
+            <div class="col">Orden</div><div class="col">ID</div>
             <div class="thumb-spacer"></div>
           </div>
 
@@ -22,12 +22,12 @@
 
           <div class="admin-row" v-for="banner in banners" :key="banner.id">
             <a class="administrar" @click="restaurar(banner)">Restaurar</a>
-            <div class="col" v-html="banner.titulo"></div>
-            <div class="col">{{ banner.etiqueta || 'Sin etiqueta' }}</div>
+            <div class="col" v-if="banner.titulo" v-html="banner.titulo"></div>
+            <div class="col texto-atenuado" v-else>Banner #{{ banner.id }}</div>
             <div class="col">{{ banner.orden }}</div>
             <div class="col">{{ banner.id }}</div>
             <div class="thumb img-placeholder banner-thumb" :style="!obtenerUrlImagenBanner(banner) ? {background: colorDeMuestra(banner.color)} : {}">
-              <img v-if="obtenerUrlImagenBanner(banner)" :src="obtenerUrlImagenBanner(banner)" :alt="banner.titulo" @error="$event.target.style.display='none'">
+              <img v-if="obtenerUrlImagenBanner(banner)" :src="obtenerUrlImagenBanner(banner)" :alt="banner.titulo || ('Banner #' + banner.id)" @error="$event.target.style.display='none'">
               <span v-else aria-hidden="true">{{ emojiDe(banner.icono) }}</span>
             </div>
           </div>

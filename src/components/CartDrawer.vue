@@ -7,22 +7,25 @@
       </div>
       <div class="cart-drawer-items">
         <div class="cart-drawer-empty" v-if="carrito.lineas.length===0">Tu carrito está vacío</div>
-        <div class="cart-drawer-item" v-for="linea in carrito.lineas" :key="linea.product.id">
-          <div class="thumb img-placeholder">
-            <img v-if="linea.product.imagenUrl" :src="linea.product.imagenUrl" :alt="linea.product.name" @error="$event.target.style.display='none'">
-            <span v-else-if="linea.product.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ linea.product.icono }}</span>
-          </div>
-          <div class="info">
-            <div class="name">{{ linea.product.name }}</div>
-            <div class="price">{{ formatearPrecio(linea.product.price) }}</div>
-            <div class="qty-row">
-              <button @click="carrito.cambiarCantidad(linea.product.id, -1)">−</button>
-              <span>{{ linea.qty }}</span>
-              <button @click="carrito.cambiarCantidad(linea.product.id, 1)">+</button>
+        <template v-for="linea in carrito.lineas" :key="linea.product?.id || linea.id">
+          <div class="cart-drawer-item" v-if="linea.product">
+            <div class="thumb img-placeholder">
+              <img v-if="linea.product.imagenUrl" :src="linea.product.imagenUrl" :alt="linea.product.name" @error="$event.target.style.display='none'">
+              <span v-else-if="linea.product.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ linea.product.icono }}</span>
             </div>
+            <div class="info">
+              <div class="name">{{ linea.product.name }}</div>
+              <div class="price">{{ formatearPrecio(linea.product.price) }}</div>
+              <div v-if="productoAgotado(linea.product)" class="cart-stock-status">Agotado</div>
+              <div class="qty-row">
+                <button @click="carrito.cambiarCantidad(linea.product.id, -1)">−</button>
+                <span>{{ linea.qty }}</span>
+                <button :disabled="productoAgotado(linea.product)" @click="carrito.cambiarCantidad(linea.product.id, 1)">+</button>
+              </div>
+            </div>
+            <button class="remove" @click="carrito.quitar(linea.product.id)">✕</button>
           </div>
-          <button class="remove" @click="carrito.quitar(linea.product.id)">✕</button>
-        </div>
+        </template>
       </div>
       <div class="cart-drawer-footer">
         <div class="cart-drawer-total"><span>Total</span><span>{{ carrito.totalFormateado }}</span></div>
@@ -34,14 +37,21 @@
 
 <script>
 import { useCarritoStore } from '../stores/carrito.js';
+import { useProductosStore } from '../stores/productos.js';
 import { formatearPrecio } from '../catalog.js';
 
 export default {
   name: 'CartDrawer',
   data() {
-    return { carrito: useCarritoStore() };
+    return { carrito: useCarritoStore(), productos: useProductosStore() };
+  },
+  mounted() {
+    this.productos.refrescar();
   },
   methods: {
+    productoAgotado(producto) {
+      return Number(producto?.stock) <= 0 || producto?.estado === 'agotado' || producto?.agotado;
+    },
     formatearPrecio,
     pagar() {
       if (this.carrito.pagarDesdeCarrito()) {
