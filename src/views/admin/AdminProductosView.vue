@@ -82,7 +82,7 @@
                 <div class="imagen-picker-controles">
                   <input id="prod-imagen" type="file" accept="image/*" @change="alElegirImagen">
                   <button v-if="previewImagen" type="button" class="imagen-quitar" @click="quitarImagen">Quitar imagen</button>
-                  <p class="imagen-nota">JPG, PNG o WEBP. Se recorta automáticamente a un cuadrado de 800×800px (centrado), igual que se muestra en la tienda.</p>
+                  <p class="imagen-nota">JPG, PNG o WEBP. Se optimiza automáticamente para ocupar menos espacio.</p>
                 </div>
               </div>
             </div>
@@ -293,34 +293,19 @@ export default {
       }
     },
     optimizarImagen(archivo) {
-      // Todas las fotos de producto se muestran recortadas como
-      // cuadrado en todos lados (tarjetas, carrito, ficha de
-      // producto: todas usan aspect-ratio 1/1 + object-fit cover), así
-      // que el archivo que se guarda queda directamente en ese mismo
-      // tamaño fijo, en vez de subir la imagen con su forma original
-      // y confiar en que el CSS la recorte al mostrarla.
-      const TAMANO = 800; // px de lado, la imagen final siempre es 800×800
-      const CALIDAD = 0.85;
+      const MAX_DIMENSION = 1600;
+      const CALIDAD = 0.82;
 
       return new Promise((resolve, reject) => {
         const imagen = new Image();
         const url = URL.createObjectURL(archivo);
         imagen.onload = () => {
           URL.revokeObjectURL(url);
+          const escala = Math.min(1, MAX_DIMENSION / Math.max(imagen.width, imagen.height));
           const canvas = document.createElement('canvas');
-          canvas.width = TAMANO;
-          canvas.height = TAMANO;
-
-          // Recorte tipo "cover": escala la imagen para que cubra todo
-          // el cuadrado y centra lo que sobra, en vez de estirarla o
-          // dejar bordes vacíos.
-          const escala = Math.max(TAMANO / imagen.width, TAMANO / imagen.height);
-          const anchoEscalado = imagen.width * escala;
-          const altoEscalado = imagen.height * escala;
-          const desplazoX = (TAMANO - anchoEscalado) / 2;
-          const desplazoY = (TAMANO - altoEscalado) / 2;
-
-          canvas.getContext('2d').drawImage(imagen, desplazoX, desplazoY, anchoEscalado, altoEscalado);
+          canvas.width = Math.max(1, Math.round(imagen.width * escala));
+          canvas.height = Math.max(1, Math.round(imagen.height * escala));
+          canvas.getContext('2d').drawImage(imagen, 0, 0, canvas.width, canvas.height);
           canvas.toBlob((blob) => {
             if (!blob) {
               reject(new Error('El navegador no pudo comprimir la imagen.'));

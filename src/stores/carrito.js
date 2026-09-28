@@ -11,6 +11,14 @@ function leerCarritoGuardado() {
   }
 }
 
+// Búsqueda estricta: devuelve el producto solo si existe en el listado.
+// (obtenerProducto del store de productos cae al primer producto cuando
+// no encuentra el id, lo cual sirve para la ficha de producto pero acá
+// mostraría en el carrito un producto que la persona nunca agregó.)
+function buscarProducto(productos, id) {
+  return productos.lista.find(p => p.id === String(id)) || null;
+}
+
 // Store de Pinia: todo lo relacionado al carrito y al flujo de pago
 // (antes vivía como estado global manual en App.vue, compartido con
 // provide()/inject()). Ahora cualquier componente lo usa así:
@@ -37,27 +45,23 @@ export const useCarritoStore = defineStore('carrito', {
     // una línea por producto en el carrito, con el producto completo + cantidad
     // (el producto sale del store de productos, así el carrito siempre
     // muestra los datos reales, sin importar de dónde vino cada uno).
-    // Si un id guardado ya no existe en el catálogo (producto borrado,
-    // por ejemplo), se filtra en vez de mostrar una línea rota.
+    //
+    // Se ignoran los ids guardados que ya no corresponden a un producto
+    // que exista (por ejemplo si se regeneró la base, se archivó o borró
+    // el producto, o el listado todavía no terminó de cargar). Antes esos
+    // ids devolvían "undefined" y rompían toda la pantalla al leer
+    // ".price" o ".id".
     lineas(state) {
       const productos = useProductosStore();
       return Object.keys(state.items)
-        .map(id => ({
-          id,
-          product: productos.obtenerProducto(id),
-          qty: state.items[id]
-        }))
-        .filter(linea => !!linea.product);
+        .map(id => ({ product: buscarProducto(productos, id), qty: state.items[id] }))
+        .filter(linea => linea.product);
     },
-    cantidad(state) {
-      return Object.values(state.items).reduce((suma, qty) => suma + qty, 0);
+    cantidad() {
+      return this.lineas.reduce((suma, linea) => suma + linea.qty, 0);
     },
-    total(state) {
-      const productos = useProductosStore();
-      return Object.keys(state.items).reduce((suma, id) => {
-        const producto = productos.obtenerProducto(id);
-        return producto ? suma + state.items[id] * producto.price : suma;
-      }, 0);
+    total() {
+      return this.lineas.reduce((suma, linea) => suma + linea.qty * linea.product.price, 0);
     },
     totalFormateado() {
       return formatearPrecio(this.total);
@@ -69,26 +73,11 @@ export const useCarritoStore = defineStore('carrito', {
       localStorage.setItem('carrito_items', JSON.stringify(this.items));
     },
     agregar(id) {
-      const producto = useProductosStore().obtenerProducto(id);
-      if (!producto) return;
-
-      const stock = Number(producto.stock);
-      const cantidadActual = this.items[id] || 0;
-
-      if (Number.isFinite(stock) && (stock <= 0 || cantidadActual >= stock)) return;
-
-      this.items[id] = cantidadActual + 1;
+      this.items[id] = (this.items[id] || 0) + 1;
       this.persistir();
     },
     cambiarCantidad(id, delta) {
       if (!this.items[id]) return;
-
-      const producto = useProductosStore().obtenerProducto(id);
-      if (!producto) return;
-
-      const stock = Number(producto.stock);
-      if (delta > 0 && Number.isFinite(stock) && this.items[id] >= stock) return;
-
       this.items[id] += delta;
       if (this.items[id] <= 0) delete this.items[id];
       this.persistir();

@@ -62,7 +62,16 @@
           </div>
           <div class="panel">
             <h4>Ventas por categoría</h4>
-            <div ref="categoriasChart" class="categorias-chart"></div>
+            <div class="donut-row">
+              <div class="donut" :style="{background: donutGradiente}">
+                <div class="donut-hole"></div>
+              </div>
+              <div class="legend">
+                <div class="legend-item" v-for="categoriaItem in ventasCategoria" :key="categoriaItem.etiqueta">
+                  <span><span class="dot" :style="{background:categoriaItem.color}"></span>{{categoriaItem.etiqueta}}</span><b>{{categoriaItem.porcentaje}}%</b>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -85,20 +94,21 @@
             <!-- Si la API falla, se informa el problema sin ocultar toda la pantalla. -->
             <div v-if="error" class="producto-error">{{ error }}</div>
             <div class="resumen-row">
-              <span class="resumen-icon"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg></span>
-              <span class="resumen-label">Productos disponibles</span>
-              <span class="d up">{{ resumen.productos_disponibles }}</span>
+              <span class="resumen-icon"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+              <span class="resumen-label">Visitantes</span>
+              <span class="d up">1.245 ↑16.2%</span>
             </div>
             <div class="resumen-row">
-              <span class="resumen-icon"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></span>
-              <span class="resumen-label">Stock total</span>
-              <span class="d up">{{ resumen.stock_total }}</span>
+              <span class="resumen-icon"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l5 5L20 6"/></svg></span>
+              <span class="resumen-label">Tasa de conversión</span>
+              <span class="d up">2.4% ↑8.7%</span>
             </div>
             <div class="resumen-row">
               <span class="resumen-icon"><svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.6 12.6a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L21 7H6"/></svg></span>
-              <span class="resumen-label">Productos agotados</span>
-              <span class="d down">{{ resumen.productos_agotados }}</span>
+              <span class="resumen-label">Carritos abandonados</span>
+              <span class="d down">7 ↓5.3%</span>
             </div>
+            <a class="link-more" @click="avisoDemo('Reporte completo (demo)')">Ver reporte completo ›</a>
           </div>
         </div>
       </div>
@@ -110,7 +120,6 @@
 import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
-import ApexCharts from 'apexcharts';
 
 // vue-chartjs dibuja el gráfico combinado de ventas y órdenes.
 import { Bar } from 'vue-chartjs';
@@ -148,12 +157,11 @@ export default {
     return {
       cargando: false,
       error: '',
-      resumen: { ventas_totales: 0, ordenes: 0, clientes_nuevos: 0, ticket_promedio: 0, productos_disponibles: 0, stock_total: 0, productos_agotados: 0 },
+      resumen: { ventas_totales: 0, ordenes: 0, clientes_nuevos: 0, ticket_promedio: 0 },
       periodo: 'últimos 30 días',
       datosDiarios: [],
       categorias: [],
       productos: [],
-      categoriasChart: null,
       // Las series empiezan vacías y se completan con la respuesta del backend.
       datosGrafico: {
         labels: [],
@@ -206,15 +214,25 @@ export default {
     };
   },
   computed: {
+    ventasCategoria() {
+      const colores = ['#14208c', '#2e9e4f', '#f0b429', '#8b5cf6', '#9aa3b2'];
+      return this.categorias.map((categoria, indice) => ({ ...categoria, color: colores[indice % colores.length] }));
+    },
+    donutGradiente() {
+      let acumulado = 0;
+      const tramos = this.ventasCategoria.map(c => {
+        const desde = acumulado;
+        acumulado += c.porcentaje;
+        return `${c.color} ${desde}% ${acumulado}%`;
+      });
+      return `conic-gradient(${tramos.join(', ')})`;
+    },
     productosMasVendidos() {
       return this.productos;
     }
   },
   async mounted() {
     await this.cargarAnaliticas();
-  },
-  beforeUnmount() {
-    this.categoriasChart?.destroy();
   },
   methods: {
     formatearPrecio(valor) {
@@ -231,7 +249,6 @@ export default {
         this.datosDiarios = datos.grafico || [];
         this.categorias = datos.categorias || [];
         this.productos = datos.productos || [];
-        this.renderizarGraficoCategorias();
         // Convertimos la respuesta en las etiquetas y series que espera Chart.js.
         this.datosGrafico = {
           ...this.datosGrafico,
@@ -255,52 +272,7 @@ export default {
         this.cargando = false;
       }
     },
-    renderizarGraficoCategorias() {
-      this.categoriasChart?.destroy();
-
-      if (!this.categorias.length || !this.$refs.categoriasChart) return;
-
-      this.categoriasChart = new ApexCharts(this.$refs.categoriasChart, {
-        series: this.categorias.map(categoria => Number(categoria.ventas) || 0),
-        chart: {
-          type: 'donut',
-          width: '100%',
-          height: 330
-        },
-        labels: this.categorias.map(categoria => categoria.etiqueta),
-        colors: ['#0EA5E9', '#14B8A6', '#F59E0B', '#F43F5E', '#8B5CF6'],
-        plotOptions: {
-          pie: {
-            borderRadius: 12,
-            expandOnClick: true,
-            donut: {
-              size: '68%',
-              labels: {
-                show: true,
-                total: {
-                  show: true,
-                  label: 'Total ventas',
-                  formatter: (w) => this.formatearPrecio(w.globals.seriesTotals.reduce((total, valor) => total + valor, 0))
-                }
-              }
-            }
-          }
-        },
-        stroke: { width: 5, colors: ['#fff'] },
-        dataLabels: { enabled: false },
-        legend: { position: 'bottom' },
-        title: { text: 'Ventas por categoría', align: 'left' },
-        responsive: [{
-          breakpoint: 480,
-          options: { chart: { width: 320 } }
-        }],
-        tooltip: {
-          y: { formatter: valor => this.formatearPrecio(valor) }
-        }
-      });
-
-      this.categoriasChart.render();
-    }
+    avisoDemo(msg) { alert(msg); }
   }
 };
 </script>

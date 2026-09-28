@@ -16,18 +16,15 @@
       </div>
     </div>
     <div class="account">
-      <!-- si el usuario esta logueado, el icono y el nombre llevan los dos al perfil -->
-      <router-link v-if="usuario" class="user-profile-link" :to="{name:'perfil'}">
-        <div class="user-icon">👤</div>
-        <span>{{ usuario.name }}</span>
-      </router-link>
-      <template v-else>
-        <div class="user-icon">👤</div>
-        <div class="links">
-          <router-link :to="{name:'login'}">Iniciar sesión</router-link>
-          <router-link :to="{name:'registro'}">Registrarse</router-link>
-        </div>
-      </template>
+      <div class="user-icon">👤</div>
+      <!-- si el usuario esta logueado, mostramos su nombre y el enlace al perfil -->
+      <div v-if="usuario" class="user-profile-link">
+        <router-link :to="{name:'perfil'}">{{ usuario.name }}</router-link>
+      </div>
+      <div v-else class="links">
+        <router-link :to="{name:'login'}">Iniciar sesión</router-link>
+        <router-link :to="{name:'registro'}">Registrarse</router-link>
+      </div>
     </div>
   </div>
   <div class="navbar">
@@ -35,15 +32,6 @@
       <button class="categorias-btn" @click="categoriasAbiertas = !categoriasAbiertas"><span class="bars">≡</span> CATEGORÍAS ▾</button>
       <div class="mega-menu">
         <div class="mega-menu-list">
-          <div
-            class="mega-menu-item"
-            :class="{active: categoriaActiva===null}"
-            @mouseenter="categoriaActiva = null"
-            @click="irACategoria(null)"
-          >
-            <span class="mm-icon">▦</span>
-            <span class="mm-label">Todas las categorías</span>
-          </div>
           <div
             class="mega-menu-item"
             v-for="cat in categoriasMenu"
@@ -61,7 +49,7 @@
           <div class="mega-menu-panel-cols">
             <div class="mm-col" v-for="grupo in categoriaActivaData.subcategorias" :key="grupo.titulo">
               <h4>{{ grupo.titulo }}</h4>
-              <a v-for="item in grupo.items" :key="item" @click="irACategoria(categoriaActiva)">{{ item }}</a>
+              <a v-for="item in grupo.items" :key="item" @click="irACategoria">{{ item }}</a>
             </div>
           </div>
         </div>

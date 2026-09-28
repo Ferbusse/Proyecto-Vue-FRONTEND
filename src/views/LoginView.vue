@@ -11,11 +11,7 @@
         <input v-model="form.password" :type="verClave ? 'text':'password'" required>
         <button class="toggle-pass" type="button" @click="verClave=!verClave">👁</button>
       </div>
-      <button type="button" class="auth-forgot" @click="mostrarAyudaClave = !mostrarAyudaClave">Olvidé mi contraseña</button>
-      <p v-if="mostrarAyudaClave" class="imagen-nota" style="font-size:13px;">
-        Por ahora no hay recuperación automática: escribinos a
-        <a href="mailto:contacto@zonamovil.com">contacto@zonamovil.com</a> y te ayudamos a recuperar tu cuenta.
-      </p>
+      <a class="auth-forgot">Olvidé mi contraseña</a>
       <p v-if="error" class="auth-error">{{ error }}</p>
       <button class="auth-submit" type="submit" :disabled="cargando">{{ cargando ? 'Ingresando...' : 'Ingresar' }}</button>
       </form>
@@ -33,7 +29,6 @@ export default {
   data() {
     return {
       verClave: false,
-      mostrarAyudaClave: false,
       cargando: false,
       error: '',
       form: { email: '', password: '' }

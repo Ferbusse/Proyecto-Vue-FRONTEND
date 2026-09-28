@@ -1,13 +1,15 @@
 <template>
   <router-view v-slot="{ Component }">
-    <component :is="Component" :key="$route.fullPath" />
+    <transition name="route-fade" mode="out-in">
+      <component :is="Component" />
+    </transition>
   </router-view>
 
-  <cart-drawer v-if="!enAdmin"></cart-drawer>
-  <payment-modals v-if="!enAdmin"></payment-modals>
+  <cart-drawer></cart-drawer>
+  <payment-modals></payment-modals>
   <floating-social v-if="!enAdmin"></floating-social>
 
-  <div v-if="!enAdmin" class="toast" :class="{show: carrito.mostrarAvisoGlobal}">¡Pago realizado con éxito!</div>
+  <div class="toast" :class="{show: carrito.mostrarAvisoGlobal}">¡Pago realizado con éxito!</div>
 </template>
 
 <script>

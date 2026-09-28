@@ -1,41 +1,14 @@
 <template>
   <div class="modal-overlay" :class="{open: carrito.modalPago}">
-    <div class="modal-box modal-box-pago-metodo">
+    <div class="modal-box">
       <button class="modal-close" @click="carrito.modalPago=false">✕</button>
-      <pago-pasos :paso-actual="2"></pago-pasos>
-      <h2 class="pago-metodo-titulo">¿Cómo querés pagar?</h2>
-
-      <div class="pago-metodo-grid">
-        <button
-          v-for="opcion in tarjetas"
-          :key="opcion.valor"
-          type="button"
-          class="pago-metodo-tarjeta"
-          :class="[opcion.valor, {selected: carrito.metodoPagoSeleccionado===opcion.valor}]"
-          @click="carrito.metodoPagoSeleccionado=opcion.valor"
-        >
-          <span class="pago-metodo-check" aria-hidden="true">✓</span>
-          <span class="pago-metodo-chip" aria-hidden="true"></span>
-          <span class="pago-metodo-marca">{{ opcion.etiqueta }}</span>
-        </button>
+      <h2>Elija su método<br>de pago</h2>
+      <div class="pay-options">
+        <button class="pay-card visa" :class="{selected: carrito.metodoPagoSeleccionado==='visa'}" @click="carrito.metodoPagoSeleccionado='visa'">VISA</button>
+        <button class="pay-card mc" :class="{selected: carrito.metodoPagoSeleccionado==='mc'}" @click="carrito.metodoPagoSeleccionado='mc'">MasterCard</button>
+        <button class="pay-card oca" :class="{selected: carrito.metodoPagoSeleccionado==='oca'}" @click="carrito.metodoPagoSeleccionado='oca'">OCA</button>
       </div>
-
-      <button
-        type="button"
-        class="pago-metodo-banco"
-        :class="{selected: carrito.metodoPagoSeleccionado==='bank'}"
-        @click="carrito.metodoPagoSeleccionado='bank'"
-      >
-        <span class="pago-metodo-banco-icono" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 10l9-6 9 6"/><path d="M5 10v9M9.5 10v9M14.5 10v9M19 10v9"/><path d="M3 19h18"/></svg>
-        </span>
-        <span class="pago-metodo-banco-texto">
-          <strong>Transferencia bancaria</strong>
-          <small>Te mandamos los datos por correo</small>
-        </span>
-        <span class="pago-metodo-check" aria-hidden="true">✓</span>
-      </button>
-
+      <button class="bank-transfer" :class="{selected: carrito.metodoPagoSeleccionado==='bank'}" @click="carrito.metodoPagoSeleccionado='bank'">Transferencia<br>bancaria</button>
       <button class="modal-btn" @click="continuar">Continuar</button>
       <button class="modal-help" @click="avisoDemo('Un asesor te contactará en breve')">Necesito ayuda</button>
     </div>
@@ -82,7 +55,6 @@
       </div>
       <div class="card-form-row"><div class="fg"><label>Correo Electrónico:</label><input type="email"></div></div>
       <div class="card-form-row"><div class="fg"><label>Dirección:</label><input type="text"></div></div>
-      <p v-if="errorTarjeta" class="auth-error">{{ errorTarjeta }}</p>
       <button class="modal-btn" @click="finalizar">Finalizar pago</button>
       <button class="modal-help" @click="avisoDemo('Un asesor te contactará en breve')">Necesito ayuda</button>
     </div>
@@ -91,19 +63,12 @@
 
 <script>
 import { useCarritoStore } from '../stores/carrito.js';
-import PagoPasos from './PagoPasos.vue';
 
 export default {
   name: 'PaymentModals',
-  components: { PagoPasos },
   data() {
     return {
       carrito: useCarritoStore(),
-      tarjetas: [
-        { valor: 'visa', etiqueta: 'VISA' },
-        { valor: 'mc', etiqueta: 'MasterCard' },
-        { valor: 'oca', etiqueta: 'OCA' }
-      ],
       // solo alimentan la tarjeta visual de arriba — el envío del
       // pago sigue funcionando exactamente igual que antes
       formularioTarjeta: {
@@ -112,8 +77,7 @@ export default {
         cvv: '',
         nombre: '',
         apellido: ''
-      },
-      errorTarjeta: ''
+      }
     };
   },
   computed: {
@@ -140,15 +104,6 @@ export default {
       // si resultado === 'tarjeta', el modal de tarjeta ya se abrió solo
     },
     finalizar() {
-      // Antes se podía tocar "Finalizar pago" con la tarjeta
-      // completamente vacía. La validación acá es básica (es un pago
-      // simulado, no se cobra nada de verdad) pero al menos evita eso.
-      const digitos = (this.formularioTarjeta.numero || '').replace(/\D/g, '');
-      if (digitos.length < 16 || !this.formularioTarjeta.mesAno || !this.formularioTarjeta.cvv || !this.formularioTarjeta.nombre || !this.formularioTarjeta.apellido) {
-        this.errorTarjeta = 'Completá todos los datos de la tarjeta antes de continuar.';
-        return;
-      }
-      this.errorTarjeta = '';
       this.carrito.finalizarPago(() => {
         this.$router.push({ name: 'inicio' });
       });

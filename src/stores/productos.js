@@ -33,7 +33,7 @@ export function obtenerUrlImagen(productoBackend) {
 // tienda (nombre/precio_venta en vez de name/price). Los normalizamos
 // acá, una sola vez, así el resto de los componentes no tiene que
 // saber de dónde vino el producto.
-function normalizar(productoBackend) {
+export function normalizar(productoBackend) {
   // Normalizamos la categoría del backend para que el filtro del catálogo
   // pueda compararla con la categoría seleccionada por el usuario.
   const categorias = Array.isArray(productoBackend.categorias) ? productoBackend.categorias : [];
@@ -46,8 +46,6 @@ function normalizar(productoBackend) {
     descripcion: productoBackend.descripcion || '',
     price: Number(productoBackend.precio_venta),
     stock: productoBackend.stock,
-    estado: productoBackend.estado,
-    agotado: Number(productoBackend.stock) <= 0 || productoBackend.estado === 'agotado',
     categoriaId,
     categoriaIds,
     categoriaNombre: categorias[0]?.nombre || null,
@@ -66,14 +64,8 @@ export const useProductosStore = defineStore('productos', {
     usandoCatalogoDemo: false
   }),
   getters: {
-    // Importante: si no lo encuentra, devuelve undefined (NO el primer
-    // producto de la lista). Antes caía en state.lista[0] como "default",
-    // lo que hacía que un id viejo/borrado (un link compartido, o un
-    // producto fantasma que quedó en el carrito guardado) mostrara en
-    // silencio un producto completamente distinto en vez de avisar que
-    // no existe.
     obtenerProducto: (state) => (id) => {
-      return state.lista.find(p => p.id === String(id));
+      return state.lista.find(p => p.id === String(id)) || state.lista[0];
     }
   },
   actions: {
@@ -104,10 +96,6 @@ export const useProductosStore = defineStore('productos', {
         this.cargando = false;
         this.cargado = true;
       }
-    },
-    async refrescar() {
-      this.cargado = false;
-      await this.cargar();
     }
   }
 });
