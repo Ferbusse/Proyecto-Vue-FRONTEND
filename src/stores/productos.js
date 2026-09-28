@@ -33,7 +33,12 @@ export function obtenerUrlImagen(productoBackend) {
 // tienda (nombre/precio_venta en vez de name/price). Los normalizamos
 // acá, una sola vez, así el resto de los componentes no tiene que
 // saber de dónde vino el producto.
-export function normalizar(productoBackend) {
+// Exportada para que otras pantallas que traigan productos "crudos" del
+// backend por su cuenta (no desde /productos) los puedan pasar por la
+// misma normalización y queden con la forma que ya espera el resto de
+// la tienda (ProductCard, CatCard, etc). La usa, por ejemplo,
+// InicioView para la sección de "Novedades".
+export function normalizarProducto(productoBackend) {
   // Normalizamos la categoría del backend para que el filtro del catálogo
   // pueda compararla con la categoría seleccionada por el usuario.
   const categorias = Array.isArray(productoBackend.categorias) ? productoBackend.categorias : [];
@@ -46,6 +51,8 @@ export function normalizar(productoBackend) {
     descripcion: productoBackend.descripcion || '',
     price: Number(productoBackend.precio_venta),
     stock: productoBackend.stock,
+    estado: productoBackend.estado,
+    agotado: Number(productoBackend.stock) <= 0 || productoBackend.estado === 'agotado',
     categoriaId,
     categoriaIds,
     categoriaNombre: categorias[0]?.nombre || null,
@@ -64,8 +71,14 @@ export const useProductosStore = defineStore('productos', {
     usandoCatalogoDemo: false
   }),
   getters: {
+    // Importante: si no lo encuentra, devuelve undefined (NO el primer
+    // producto de la lista). Antes caía en state.lista[0] como "default",
+    // lo que hacía que un id viejo/borrado (un link compartido, o un
+    // producto fantasma que quedó en el carrito guardado) mostrara en
+    // silencio un producto completamente distinto en vez de avisar que
+    // no existe.
     obtenerProducto: (state) => (id) => {
-      return state.lista.find(p => p.id === String(id)) || state.lista[0];
+      return state.lista.find(p => p.id === String(id));
     }
   },
   actions: {
@@ -78,7 +91,7 @@ export const useProductosStore = defineStore('productos', {
       this.cargando = true;
       try {
         const response = await api.get('/productos');
-        const reales = (response.data || []).map(normalizar);
+        const reales = (response.data || []).map(normalizarProducto);
         if (reales.length) {
           this.lista = reales;
           this.usandoCatalogoDemo = false;
@@ -96,6 +109,10 @@ export const useProductosStore = defineStore('productos', {
         this.cargando = false;
         this.cargado = true;
       }
+    },
+    async refrescar() {
+      this.cargado = false;
+      await this.cargar();
     }
   }
 });

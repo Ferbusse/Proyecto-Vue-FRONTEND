@@ -6,6 +6,7 @@
       <template v-else>PRODUCTO<br>DESTACADO</template>
     </div>
     <div class="product-name">{{ product.name }}<br><span style="font-weight:400;">{{ formatearPrecio(product.price) }}</span></div>
+    <span v-if="agotado" class="product-stock-status">Agotado</span>
   </button>
 </template>
 
@@ -15,6 +16,11 @@ import { formatearPrecio } from '../catalog.js';
 export default {
   name: 'ProductCard',
   props: ['product'],
+  computed: {
+    agotado() {
+      return Number(this.product.stock) <= 0 || this.product.estado === 'agotado' || this.product.agotado;
+    }
+  },
   methods: { formatearPrecio }
 };
 </script>

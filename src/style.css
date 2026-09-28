@@ -5,6 +5,14 @@
     --fondo-gris:#f2f2f2;
     --linea:#d8d8d8;
     --linea-naranja:#e0a94d;
+    /* Paleta del flujo de pago (checkout + elegir método): mismo azul
+       de marca, más un dorado más saturado que --linea-naranja para
+       estados "seleccionado/activo", y una superficie tipo papel con
+       un tinte azulado casi imperceptible para separar las tarjetas
+       de contenido del fondo general del sitio. */
+    --pago-dorado:#c9922e;
+    --pago-papel:#f8f9fd;
+    --pago-tinta:#1c2340;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -33,7 +41,7 @@
 
   /* ===== IMAGEN DE RELLENO ===== */
   .img-placeholder{
-    background:linear-gradient(to bottom, #cfe4f7 0%, #cfe4f7 60%, #9bc95a 60%, #6f9e2e 100%);
+    background:#cfe4f7;
     display:flex; align-items:center; justify-content:center;
     color:var(--azul); font-weight:700; text-align:center;
     overflow:hidden; /* recorta cualquier foto más grande que el recuadro */
@@ -52,6 +60,7 @@
   .product-icono{font-size:38px; line-height:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,.15));}
   .product-icono-grande{font-size:96px;}
   .product-icono-chico{font-size:22px;}
+  .product-stock-status,.cart-stock-status{color:#b42318; font-size:12px; font-weight:700;}
 
   /* ===== ENCABEZADO DE LA TIENDA ===== */
   .topbar{
@@ -136,7 +145,9 @@
   /* ===== INICIO / CARRUSEL DEL BANNER ===== */
   .banner-slider{position:relative; overflow:hidden;}
   .banner-track{display:flex; transition:transform .55s cubic-bezier(.65,0,.35,1);}
-  .banner{position:relative; min-width:100%; flex-shrink:0; color:#fff; text-align:left; padding:70px 70px; display:flex; align-items:center; justify-content:space-between; gap:20px; overflow:hidden;}
+  .banner{position:relative; width:100%; min-width:100%; height:310px; box-sizing:border-box; flex-shrink:0; color:#fff; text-align:left; padding:70px 70px; display:flex; align-items:center; justify-content:space-between; gap:20px; overflow:hidden;}
+  .banner.has-image{background-size:cover; background-position:center;}
+  .banner.has-image::before{content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(90deg, rgba(10,14,70,.85) 0%, rgba(10,14,70,.45) 55%, rgba(10,14,70,.18) 100%);}
   .banner::before{content:""; position:absolute; inset:0; background:repeating-radial-gradient(circle at 10% 20%, rgba(255,255,255,.06) 0 2px, transparent 2px 40px); pointer-events:none;}
   .banner .banner-text{position:relative; z-index:2; max-width:560px;}
   .banner .eyebrow{font-size:13px; letter-spacing:2px; font-weight:700; opacity:.8; margin:0 0 10px;}
@@ -154,45 +165,40 @@
   .banner-dots button{width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.4); border:none; padding:0;}
   .banner-dots button.active{background:#fff; width:22px; border-radius:5px;}
 
-  /* Encabezado simple reutilizado arriba de cada sección de la home
-     (categorías, destacados). */
-  .section-heading{max-width:1080px; margin:36px auto 4px; padding:0 32px;}
-  .section-heading h2{color:var(--azul); font-size:22px; margin:0; letter-spacing:.2px;}
+  /* Franja de confianza (envíos / garantía / pago), debajo del banner. */
+  .franjas-confianza{max-width:1080px; margin:0 auto; padding:32px 24px; display:flex; justify-content:center; gap:56px; flex-wrap:wrap; border-top:1px solid var(--linea); border-bottom:1px solid var(--linea);}
+  .franja-item{display:flex; align-items:center; gap:14px; max-width:260px;}
+  .franja-icono{font-size:28px; line-height:1; flex-shrink:0;}
+  .franja-icono-svg{width:28px; height:28px; color:var(--azul);}
+  .franja-icono-svg svg{width:100%; height:100%;}
+  .franja-texto{display:flex; flex-direction:column; text-align:left;}
+  .franja-texto strong{color:var(--azul); font-size:14.5px; font-weight:700;}
+  .franja-texto span{color:#666; font-size:12.5px; margin-top:2px; line-height:1.35;}
 
-  .quick-links{display:flex; justify-content:center; gap:18px; padding:16px 32px 10px; flex-wrap:wrap;}
-  .tile{background:var(--azul); color:#fff; width:200px; height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; text-align:center; font-weight:600; font-size:15px; line-height:1.3; border-radius:8px; border:none; cursor:pointer; transition:background .15s ease, transform .15s ease;}
-  .tile:hover{background:var(--azul2); transform:translateY(-2px);}
-  .tile-icon{font-size:26px; line-height:1;}
-  .tile-ver-todas{background:#fff; color:var(--azul); border:1.5px dashed var(--azul);}
-  .tile-ver-todas:hover{background:#eef0fb; color:var(--azul);}
+  .products-wrap{max-width:1080px; margin:30px auto; border:1px solid var(--linea); padding:0 24px;}
+  .products-wrap-titulo{color:var(--azul); font-size:22px; font-weight:800; margin:0; padding:26px 4px 6px;}
 
-  /* Franja de confianza: refuerza en texto lo que ya promete el banner
-     (envíos, garantía, pago) para que se vea apenas se entra al sitio. */
-  .benefits-strip{max-width:1080px; margin:28px auto; padding:22px 32px; display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; border-top:1px solid var(--linea); border-bottom:1px solid var(--linea);}
-  .benefit{display:flex; align-items:center; gap:12px; flex:1; min-width:220px;}
-  .benefit-icon{font-size:26px; flex-shrink:0;}
-  .benefit strong{display:block; color:var(--azul); font-size:14px;}
-  .benefit small{display:block; color:#777; font-size:12.5px; margin-top:2px;}
-
-  .products-wrap{max-width:1080px; margin:10px auto 30px; border:1px solid var(--linea); padding:0 24px;}
+  /* Franja final "Explorá todo el catálogo", antes del footer. Mismo
+     azul del banner principal, para que se sienta parte de la misma
+     marca y no como una card genérica suelta. */
+  .cta-catalogo-wrap{max-width:1080px; margin:10px auto 44px; padding:0 24px;}
+  .cta-catalogo{display:flex; align-items:center; justify-content:space-between; gap:24px; background:linear-gradient(135deg,#14208c 0%,#0f1a70 100%); border-radius:10px; padding:40px 48px; color:#fff; overflow:hidden; position:relative;}
+  .cta-catalogo-texto{position:relative; z-index:1; max-width:520px;}
+  .cta-catalogo-eyebrow{margin:0 0 8px; font-size:12px; font-weight:800; letter-spacing:.6px; color:#aab2e8;}
+  .cta-catalogo-texto h2{margin:0 0 10px; font-size:26px; font-weight:800; line-height:1.2;}
+  .cta-catalogo-bajada{margin:0 0 22px; font-size:14px; color:#c7cbf0; line-height:1.5;}
+  .cta-catalogo-btn{display:inline-block; background:#fff; color:var(--azul); font-weight:700; font-size:14px; padding:13px 26px; border-radius:4px; text-decoration:none;}
+  .cta-catalogo-btn:hover{background:#eef0ff;}
+  /* ícono decorativo: circulo con 4 cuadraditos tipo grilla de apps */
+  .cta-catalogo-icono{position:relative; z-index:1; flex-shrink:0; width:130px; height:130px; border-radius:50%; background:rgba(255,255,255,.08); display:grid; grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr); gap:10px; align-content:center; justify-content:center; padding:26px;}
+  .cta-catalogo-icono span{width:34px; height:34px; border-radius:7px; background:rgba(255,255,255,.35);}
+  .cta-catalogo-icono span:first-child{background:rgba(255,255,255,.85);}
+  .cta-catalogo-icono span.acento{background:var(--pago-dorado);}
   .product-row{display:grid; grid-template-columns:repeat(3,1fr); gap:32px; padding:28px 0; border-bottom:1px solid var(--linea);}
   .product-row:last-child{border-bottom:none;}
-  .product-card{display:flex; flex-direction:column; align-items:center; text-align:center; background:none; border:none; padding:0; cursor:pointer;}
+  .product-card{display:flex; flex-direction:column; align-items:center; text-align:center; background:none; border:none; padding:0;}
   .product-img{width:100%; aspect-ratio:1/1; padding:10px; font-size:17px; line-height:1.3;}
   .product-name{margin-top:10px; color:var(--azul); font-weight:700; font-size:14px; line-height:1.2;}
-
-  /* Banner de cierre de la home: reutiliza el mismo look que el slider
-     de arriba (clases .banner / .banner-slide-N) para que se sienta
-     parte del mismo sistema visual, no un agregado suelto. */
-  .mini-banner{max-width:1080px; margin:30px auto 50px; border-radius:10px; overflow:hidden;}
-  .mini-banner .banner{padding:46px 50px;}
-  .mini-banner .banner h1{font-size:26px;}
-  .mini-banner .banner p{font-size:14px;}
-  .mini-banner .banner-icon{width:130px; height:130px;}
-  /* .btn-primary es azul sobre blanco; sobre el fondo oscuro del banner
-     se perdería, así que acá lo invertimos a blanco sobre azul. */
-  .mini-banner .banner .btn-primary{background:#fff; color:var(--azul); box-shadow:0 3px 0 rgba(0,0,0,.15);}
-
   /* ===== LISTADO DE CATEGORÍA ===== */
   .cat-body{display:flex;}
   .cat-sidebar{width:280px; flex-shrink:0; background:var(--azul); min-height:900px;}
@@ -204,6 +210,7 @@
   .cat-sub a:hover{color:var(--azul);}
   .filter-box{margin-top:20px;}
   .filter-box h4{margin:0 0 10px; font-size:14px; color:#333;}
+  .filter-box .price-sub-label{display:block; font-size:11px; color:#777; margin-top:8px;}
   .filter-box input[type=range]{width:100%;}
   .filter-box .price-label{text-align:center; color:var(--azul); font-size:13px; margin-top:6px;}
   .cat-main{flex:1; padding:24px 32px; background:var(--fondo-gris);}
@@ -273,10 +280,39 @@
   .cart-total{padding:20px 22px; display:flex; justify-content:space-between; align-items:center;}
   .cart-total .label{color:var(--azul); font-weight:800; font-size:22px; text-decoration:none;}
   .cart-total .amount{color:var(--azul); font-weight:700;}
+  .mini-banner .banner{padding:46px 40px;}
+  .mini-banner .banner h1{font-size:22px;}
+  .mini-banner .banner p{font-size:13px;}
+  .mini-banner .banner-icon{width:110px; height:110px;}
+  .mini-banner .arrow{width:36px; height:36px; font-size:26px;}
+
+  /* ===== INDICADOR DE PASOS DEL PAGO ===== */
+  /* Usado en el checkout y en el modal de "elegir método de pago"
+     (el modal de la tarjeta, el 3er paso, no tiene esta franja
+     porque ese no se rediseñó). */
+  .pago-pasos{display:flex; align-items:flex-start; justify-content:center; gap:0; list-style:none; margin:0 0 36px; padding:0; max-width:520px; margin-left:auto; margin-right:auto;}
+  .pago-paso{flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative; min-width:0;}
+  .pago-paso::before{content:''; position:absolute; top:15px; left:-50%; width:100%; height:2px; background:var(--linea); z-index:0;}
+  .pago-paso:first-child::before{display:none;}
+  .pago-paso.completo::before{background:var(--pago-dorado);}
+  .pago-paso-marca{position:relative; z-index:1; width:30px; height:30px; border-radius:50%; background:#fff; border:2px solid var(--linea); color:#999; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;}
+  .pago-paso.completo .pago-paso-marca{background:var(--pago-dorado); border-color:var(--pago-dorado); color:#fff;}
+  .pago-paso.activo .pago-paso-marca{background:var(--azul); border-color:var(--azul); color:#fff; box-shadow:0 0 0 4px rgba(20,32,140,.14);}
+  .pago-paso-texto{margin-top:8px; font-size:12.5px; font-weight:700; color:#999; line-height:1.3; padding:0 4px;}
+  .pago-paso.activo .pago-paso-texto{color:var(--azul);}
+  .pago-paso.completo .pago-paso-texto{color:var(--pago-tinta);}
 
   /* ===== FINALIZAR COMPRA ===== */
-  .checkout-layout{display:flex; gap:60px; max-width:1100px; margin:40px auto; padding:0 32px; flex-wrap:wrap;}
+  .pago-page{max-width:1100px; margin:0 auto; padding:40px 32px 0;}
+  .checkout-layout{display:flex; gap:40px; flex-wrap:wrap;}
   .checkout-form{flex:1; min-width:280px;}
+  /* Superficie "papel" compartida por la tarjeta de datos y el recibo,
+     para que se lean como parte del mismo paso. */
+  .pago-tarjeta-contenido, .pago-recibo{background:var(--pago-papel); border:1px solid var(--linea); border-radius:6px; padding:28px 30px;}
+  .pago-card-titulo{margin:0 0 4px; color:var(--pago-tinta); font-size:19px; font-weight:800;}
+  .pago-card-subtitulo{margin:0 0 22px; color:#6b7290; font-size:13px;}
+  .checkout-form .form-group input{background:#fff;}
+  .checkout-form .form-group input:focus{outline:none; border-color:var(--azul); box-shadow:0 0 0 2px rgba(20,32,140,.12);}
   .form-row{display:flex; gap:24px; margin-bottom:20px; flex-wrap:wrap;}
   .form-group{flex:1; min-width:180px;}
   .form-group label{display:block; color:var(--azul); font-weight:700; margin-bottom:6px; font-size:14px;}
@@ -305,13 +341,24 @@
   .imagen-picker-controles input[type=file]{font-size:13px;}
   .imagen-quitar{display:block; margin-top:8px; background:none; border:none; color:#c0392b; font-size:13px; text-decoration:underline; cursor:pointer; padding:0;}
   .imagen-nota{margin:8px 0 0; font-size:12px; color:#999;}
-  .checkout-summary{width:420px; flex-shrink:0;}
-  .summary-table{border:1px solid var(--azul);}
-  .summary-row{display:flex; border-bottom:1px solid var(--linea-naranja);}
-  .summary-row:last-child{border-bottom:none;}
-  .summary-row .qty{width:44px; display:flex; align-items:center; justify-content:center; border-right:1px solid var(--azul); color:#333;}
-  .summary-row .details{flex:1; display:flex; align-items:center; justify-content:space-between; padding:12px 16px;}
-  .summary-row .thumb{width:70px; height:56px;}
+  .imagen-resolucion-recomendada{margin:0 0 8px; font-size:12px; color:var(--azul); font-weight:600;}
+  .checkout-summary{width:400px; flex-shrink:0;}
+  /* El resumen del pedido con forma de recibo de local: ítems, línea
+     punteada, total — la metáfora natural de "esto es lo que vas a
+     pagar", en vez de otra card genérica más. */
+  .pago-recibo-vacio{padding:20px 0; text-align:center; color:#888; font-size:14px;}
+  .pago-recibo-items{display:flex; flex-direction:column; gap:14px;}
+  .pago-recibo-fila{display:flex; align-items:center; gap:12px;}
+  .pago-recibo-fila .thumb{width:52px; height:52px; flex-shrink:0; border-radius:4px;}
+  .pago-recibo-detalle{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .pago-recibo-nombre{color:var(--pago-tinta); font-weight:700; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pago-recibo-cantidad{color:#8790ad; font-size:12.5px; margin-top:2px;}
+  .pago-recibo-subtotal{color:var(--pago-tinta); font-weight:700; font-size:13.5px; white-space:nowrap;}
+  /* la línea punteada "de recibo" entre los ítems y el total */
+  .pago-recibo-divisor{margin:20px 0; border-top:2px dashed #c7cbe0;}
+  .pago-recibo-total{display:flex; justify-content:space-between; align-items:baseline; font-weight:800; color:var(--azul);}
+  .pago-recibo-total span:first-child{font-size:14px; color:var(--pago-tinta); font-weight:700;}
+  .pago-recibo-total span:last-child{font-size:22px;}
   .checkout-actions{text-align:center; margin:34px 0 60px;}
 
   /* ===== PANEL DESLIZANTE DEL CARRITO ===== */
@@ -343,14 +390,37 @@
   .modal-box-ancho{max-width:600px;}
   .modal-close{position:absolute; top:24px; left:24px; font-size:22px; color:var(--azul); background:none; border:none;}
   .modal-box h2{text-align:center; color:var(--azul); font-weight:800; font-size:26px; margin:40px 0 30px;}
-  .pay-options{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;}
-  .pay-card{border:1px solid #999; border-radius:4px; width:96px; height:46px; display:flex; align-items:center; justify-content:center; font-weight:800; background:#fff;}
-  .pay-card.visa{color:#1a1f71;}
-  .pay-card.mc{color:#eb001b;}
-  .pay-card.oca{color:#1478c6;}
-  .pay-card.selected{outline:2px solid var(--azul); outline-offset:2px;}
-  .bank-transfer{border:1px solid #999; border-radius:4px; padding:10px 20px; text-align:center; font-weight:700; color:var(--azul); background:#fff; width:220px; margin:0 auto 20px;}
-  .bank-transfer.selected{outline:2px solid var(--azul); outline-offset:2px;}
+  /* ===== ELEGIR MÉTODO DE PAGO (paso 2) ===== */
+  .modal-box-pago-metodo{background:var(--pago-papel);}
+  .pago-metodo-titulo{text-align:center; color:var(--pago-tinta); font-weight:800; font-size:21px; margin:4px 0 22px;}
+
+  /* Fichas con proporción de tarjeta real (no cuadraditos genéricos),
+     con un "chip" y la marca abajo, como una tarjeta física. El color
+     de marca vive en --pago-metodo-color y tiñe el chip y el texto. */
+  .pago-metodo-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px;}
+  .pago-metodo-tarjeta{position:relative; aspect-ratio:1.55/1; border:1.5px solid var(--linea); border-radius:8px; background:#fff; display:flex; flex-direction:column; justify-content:space-between; align-items:flex-start; padding:10px 12px; text-align:left;}
+  .pago-metodo-tarjeta.visa{--pago-metodo-color:#1a1f71;}
+  .pago-metodo-tarjeta.mc{--pago-metodo-color:#c9202f;}
+  .pago-metodo-tarjeta.oca{--pago-metodo-color:#1478c6;}
+  .pago-metodo-chip{width:22px; height:16px; border-radius:3px; background:var(--pago-metodo-color); opacity:.85;}
+  .pago-metodo-marca{font-weight:800; font-size:12.5px; color:var(--pago-metodo-color); letter-spacing:.2px;}
+  .pago-metodo-tarjeta.selected{border-color:var(--pago-dorado); box-shadow:0 0 0 2px rgba(201,146,46,.22);}
+  .pago-metodo-check{position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%; background:var(--pago-dorado); color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; opacity:0; transform:scale(.5); transition:opacity .15s ease, transform .15s ease;}
+  .pago-metodo-tarjeta.selected .pago-metodo-check,
+  .pago-metodo-banco.selected .pago-metodo-check{opacity:1; transform:scale(1);}
+
+  /* Ficha ancha para transferencia, con el mismo lenguaje visual que
+     las de tarjeta pero en un layout horizontal. */
+  .pago-metodo-banco{position:relative; width:100%; display:flex; align-items:center; gap:12px; border:1.5px solid var(--linea); border-radius:8px; background:#fff; padding:14px 16px; margin:0 0 20px; text-align:left;}
+  .pago-metodo-banco.selected{border-color:var(--pago-dorado); box-shadow:0 0 0 2px rgba(201,146,46,.22);}
+  .pago-metodo-banco-icono{flex-shrink:0; width:36px; height:36px; border-radius:50%; background:var(--pago-papel); color:var(--azul); display:flex; align-items:center; justify-content:center;}
+  .pago-metodo-banco-icono svg{width:18px; height:18px;}
+  .pago-metodo-banco-texto{flex:1; display:flex; flex-direction:column;}
+  .pago-metodo-banco-texto strong{color:var(--pago-tinta); font-size:14px;}
+  .pago-metodo-banco-texto small{color:#8790ad; font-size:12px; margin-top:2px;}
+  .pago-metodo-banco .pago-metodo-check{position:static; opacity:0; transform:scale(.5); margin-left:auto;}
+  .pago-metodo-tarjeta:focus-visible,
+  .pago-metodo-banco:focus-visible{outline:3px solid var(--azul); outline-offset:2px;}
   .modal-btn{display:block; width:100%; background:var(--azul); color:#fff; border:none; padding:16px; font-weight:800; font-size:18px; border-radius:3px; margin-top:26px; box-shadow:0 3px 0 var(--azul-oscuro);}
   .modal-btn:active{transform:translateY(2px); box-shadow:none;}
   .modal-btn:disabled{opacity:.6; cursor:not-allowed;}
@@ -393,7 +463,11 @@
   .auth-field label{display:block; color:var(--azul); font-weight:700; margin-bottom:8px;}
   .auth-field input{width:100%; padding:14px 16px; border:1px solid #333; font-size:15px;}
   .auth-field .toggle-pass{position:absolute; right:16px; top:42px; background:none; border:none; font-size:16px;}
-  .auth-forgot{color:var(--azul); font-size:14px; text-decoration:none;}
+  /* Es un <button>, no un <a> (antes era un link sin href que no hacía
+     nada al tocarlo), así que le sacamos el aspecto por defecto del
+     navegador para que siga viéndose como un link de texto. */
+  .auth-forgot{background:none; border:none; padding:0; cursor:pointer; display:block; color:var(--azul); font-size:14px; text-decoration:none;}
+  .auth-forgot:hover{text-decoration:underline;}
   .check-label{display:flex; align-items:center; gap:8px; color:#555; font-size:13px; margin:14px 0 4px; cursor:pointer;}
   .check-label input{width:15px; height:15px; cursor:pointer;}
 
@@ -425,8 +499,11 @@
   .auth-submit:disabled{opacity:.6; cursor:not-allowed;}
 
   /* ===== USUARIO LOGUEADO (header) ===== */
-  .user-profile-link a{color:var(--azul); text-decoration:none; font-weight:700; font-size:13px;}
-  .user-profile-link a:hover{text-decoration:underline;}
+  /* Ahora el propio link envuelve al ícono y al nombre, así los dos
+     llevan al perfil (antes solo el nombre era clickeable). */
+  .account .user-profile-link{display:flex; align-items:center; gap:8px; color:var(--azul); text-decoration:none; font-weight:700; font-size:13px;}
+  .account .user-profile-link:hover{text-decoration:underline;}
+  .account .user-profile-link .user-icon{border-color:currentColor;}
 
   /* Texto solo para lectores de pantalla (título de la página que no
      hace falta mostrar visualmente porque el layout ya deja claro
@@ -557,6 +634,7 @@
      corridas respecto a sus títulos. */
   .admin-header-row .thumb-spacer{width:56px; flex-shrink:0;}
   .admin-header-row .chk-spacer{width:18px; flex-shrink:0;}
+  .texto-atenuado{color:#999; font-style:italic;}
 
   /* ===== "SIN PRODUCTOS" / ERROR (listado de productos) ===== */
   .producto-error, .producto-vacio{padding:18px 20px; color:var(--azul);}
@@ -620,6 +698,7 @@
   .donut-row{display:flex; align-items:center; gap:22px;}
   .donut{width:120px; height:120px; border-radius:50%; position:relative; flex-shrink:0;}
   .donut-hole{position:absolute; inset:26px; background:#fff; border-radius:50%;}
+  .categorias-chart{width:100%; min-height:330px;}
   .legend{flex:1;}
   .legend-item{display:flex; align-items:center; justify-content:space-between; font-size:13px; margin:7px 0; color:#444;}
   .legend-item .dot{width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:8px;}
@@ -666,8 +745,21 @@
     .checkout-layout{flex-direction:column;}
     .checkout-summary{width:100%;}
     .cuenta-grid{grid-template-columns:1fr;}
-    .mini-banner .banner{padding:32px 24px; flex-direction:column; text-align:center;}
-    .mini-banner .banner-icon{display:none;}
-    .benefits-strip{justify-content:center; text-align:center;}
-    .benefit{flex-direction:column; min-width:140px;}
+    .cta-catalogo{flex-direction:column; text-align:center; padding:34px 26px;}
+    .cta-catalogo-texto{max-width:none;}
+    .cta-catalogo-icono{width:96px; height:96px; padding:18px; gap:7px;}
+    .cta-catalogo-icono span{width:24px; height:24px;}
+  }
+  @media(max-width:480px){
+    /* El padding de .modal-box nunca tuvo un ajuste para celulares
+       angostos (le pasa a cualquier modal del sitio, no solo a los de
+       pago). Achicarlo acá le da más aire al contenido de adentro. */
+    .modal-box{padding:24px 20px 30px;}
+    .modal-box h2{font-size:22px; margin-top:34px;}
+    /* El grid de tarjetas de pago era flex-wrap antes (se acomodaba
+       solo); el grid de 3 columnas fijas necesita este empujón para
+       no quedar demasiado angosto en un teléfono chico. */
+    .pago-metodo-grid{gap:8px;}
+    .pago-metodo-tarjeta{padding:8px 9px;}
+    .pago-metodo-marca{font-size:11px;}
   }

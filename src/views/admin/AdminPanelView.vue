@@ -43,6 +43,17 @@
             <span class="admin-tile-arrow" aria-hidden="true">›</span>
           </button>
 
+          <button class="admin-tile" @click="$router.push({name:'admin-banners'})">
+            <span class="admin-tile-icon">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="10" rx="2"/><path d="M3 9h18"/><circle cx="8" cy="17.5" r="1"/><circle cx="12" cy="17.5" r="1"/><circle cx="16" cy="17.5" r="1"/></svg>
+            </span>
+            <span class="admin-tile-text">
+              <strong>Banner de inicio</strong>
+              <small>Editar el carrusel de la página principal</small>
+            </span>
+            <span class="admin-tile-arrow" aria-hidden="true">›</span>
+          </button>
+
           <button class="admin-tile" @click="$router.push({name:'admin-empleados'})">
             <span class="admin-tile-icon">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="8.5" r="2.4"/><path d="M15.8 14.2c2.6.4 4.7 2.3 4.7 5.3"/></svg>

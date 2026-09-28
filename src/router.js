@@ -7,6 +7,7 @@ import ProductoView from './views/ProductoView.vue';
 import CheckoutView from './views/CheckoutView.vue';
 import LoginView from './views/LoginView.vue';
 import RegistroView from './views/RegistroView.vue';
+import VerificarCodigoView from './views/VerificarCodigoView.vue';
 import PerfilView from './views/PerfilView.vue';
 import PedidosView from './views/cuenta/PedidosView.vue';
 import DireccionesView from './views/cuenta/DireccionesView.vue';
@@ -18,9 +19,10 @@ import AdminProductosArchivadosView from './views/admin/AdminProductosArchivados
 import AdminEmpleadosView from './views/admin/AdminEmpleadosView.vue';
 import AdminOrdenesView from './views/admin/AdminOrdenesView.vue';
 import AdminAnaliticasView from './views/admin/AdminAnaliticasView.vue';
-import AdminFinanzasView from './views/admin/AdminFinanzasView.vue';
 import AdminCalendarioView from './views/admin/AdminCalendarioView.vue';
 import AdminEnviosView from './views/admin/AdminEnviosView.vue';
+import AdminBannersView from './views/admin/AdminBannersView.vue';
+import AdminBannersArchivadosView from './views/admin/AdminBannersArchivadosView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -35,6 +37,7 @@ const router = createRouter({
     { path: '/checkout', name: 'checkout', component: CheckoutView },
     { path: '/login', name: 'login', component: LoginView },
     { path: '/registro', name: 'registro', component: RegistroView },
+    { path: '/registro/verificar-codigo', name: 'registro-verificar', component: VerificarCodigoView },
     { path: '/perfil', name: 'perfil', component: PerfilView },
     { path: '/perfil/pedidos', name: 'cuenta-pedidos', component: PedidosView },
     { path: '/perfil/direcciones', name: 'cuenta-direcciones', component: DireccionesView },
@@ -46,9 +49,10 @@ const router = createRouter({
     { path: '/admin/empleados', name: 'admin-empleados', component: AdminEmpleadosView },
     { path: '/admin/ordenes', name: 'admin-ordenes', component: AdminOrdenesView },
     { path: '/admin/analiticas', name: 'admin-analiticas', component: AdminAnaliticasView },
-    { path: '/admin/finanzas', name: 'admin-finanzas', component: AdminFinanzasView },
     { path: '/admin/calendario', name: 'admin-calendario', component: AdminCalendarioView },
-    { path: '/admin/envios', name: 'admin-envios', component: AdminEnviosView }
+    { path: '/admin/envios', name: 'admin-envios', component: AdminEnviosView },
+    { path: '/admin/banners', name: 'admin-banners', component: AdminBannersView },
+    { path: '/admin/banners/archivados', name: 'admin-banners-archivados', component: AdminBannersArchivadosView }
   ]
 });
 
