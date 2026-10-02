@@ -19,7 +19,7 @@ export function buscarCosa(pepeId) {
 }
 
 export function plataFormato(n) {
-  return n.toFixed(2) + '$ UYU';
+  return 'UYU $' + n.toFixed(2);
 }
 
 export const partirEnPilas = (arreglin, tamañito) => {

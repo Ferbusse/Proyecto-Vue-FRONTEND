@@ -1,5 +1,5 @@
 <template>
-  <div class="banner-slider" @mouseenter="detener" @mouseleave="reproducir">
+  <div class="banner-slider" @pointerenter="alEntrarMouse" @pointerleave="alSalirMouse">
     <button class="arrow left" @click="anteriorManual">‹</button>
     <div class="banner-track" :style="{transform: 'translateX(-' + (indice*100) + '%)'}">
       <div
@@ -8,10 +8,10 @@
         :style="diapositiva.imagenUrl ? {backgroundImage: 'url(' + diapositiva.imagenUrl + ')'} : {}"
         v-for="(diapositiva, i) in diapositivas" :key="i"
       >
-        <div class="banner-text">
-          <p class="eyebrow">{{ diapositiva.etiqueta }}</p>
-          <h1 v-html="diapositiva.titulo"></h1>
-          <p>{{ diapositiva.subtitulo }}</p>
+        <div class="banner-text" v-if="diapositiva.etiqueta || diapositiva.titulo || diapositiva.subtitulo">
+          <p class="eyebrow" v-if="diapositiva.etiqueta">{{ diapositiva.etiqueta }}</p>
+          <h1 v-if="diapositiva.titulo" v-html="diapositiva.titulo"></h1>
+          <p v-if="diapositiva.subtitulo">{{ diapositiva.subtitulo }}</p>
         </div>
         <template v-if="!diapositiva.imagenUrl">
         <svg class="banner-icon" viewBox="0 0 100 100" v-if="diapositiva.icono==='tag'">
@@ -54,10 +54,13 @@
 
 <script>
 import api from '../Api/api.js';
+import { limpiarTexto } from '../utils/textoBanner.js';
 
-// Carrusel del banner: cambia de diapositiva sola cada 4.2s y se puede
-// controlar con las flechas o los puntos. Se pausa mientras el mouse
-// está encima.
+// Carrusel del banner: cambia de diapositiva sola cada 10s y se puede
+// controlar con las flechas o los puntos. Mientras el mouse está encima
+// queda quieto (aunque se use una flecha); al sacarlo, vuelve a contar
+// los 10s desde cero.
+const INTERVALO_MS = 10000;
 //
 // Las diapositivas se traen del backend (así el admin las puede editar
 // desde /admin/banner), pero arrancamos con estas 4 fijas como
@@ -85,6 +88,7 @@ export default {
     return {
       indice: 0,
       temporizador: null,
+      mouseEncima: false,
       diapositivas: DIAPOSITIVAS_RESPALDO
     };
   },
@@ -103,9 +107,9 @@ export default {
           clase: 'banner-slide-' + b.color,
           id: b.id,
           icono: b.icono,
-          etiqueta: b.etiqueta,
-          titulo: b.titulo,
-          subtitulo: b.subtitulo,
+          etiqueta: limpiarTexto(b.etiqueta),
+          titulo: limpiarTexto(b.titulo),
+          subtitulo: limpiarTexto(b.subtitulo),
           imagenUrl: obtenerUrlImagen(b)
         }));
         if (banners.length) {
@@ -124,15 +128,30 @@ export default {
     },
     siguiente() { this.irA(this.indice + 1); },
     anterior() { this.irA(this.indice - 1); },
+    // Arranca (o reinicia) el avance automático, salvo que el mouse esté encima.
     reproducir() {
       clearInterval(this.temporizador);
-      this.temporizador = setInterval(() => this.siguiente(), 4200);
+      if (this.mouseEncima) return;
+      this.temporizador = setInterval(() => this.siguiente(), INTERVALO_MS);
     },
     detener() { clearInterval(this.temporizador); },
-    // acciones manuales: reinician el autoplay para no cortarlo a mitad de camino
-    anteriorManual() { this.anterior(); this.detener(); this.reproducir(); },
-    siguienteManual() { this.siguiente(); this.detener(); this.reproducir(); },
-    puntoManual(i) { this.irA(i); this.detener(); this.reproducir(); }
+    // Solo cuenta el mouse: en celular "tocar" también dispara estos
+    // eventos y nunca hay un "salir", así que el carrusel quedaba frenado.
+    alEntrarMouse(evento) {
+      if (evento.pointerType !== 'mouse') return;
+      this.mouseEncima = true;
+      this.detener();
+    },
+    alSalirMouse(evento) {
+      if (evento.pointerType !== 'mouse') return;
+      this.mouseEncima = false;
+      this.reproducir();
+    },
+    // acciones manuales: reinician la cuenta de 10s (con el mouse encima no
+    // arranca hasta que se saque)
+    anteriorManual() { this.anterior(); this.reproducir(); },
+    siguienteManual() { this.siguiente(); this.reproducir(); },
+    puntoManual(i) { this.irA(i); this.reproducir(); }
   }
 };
 </script>

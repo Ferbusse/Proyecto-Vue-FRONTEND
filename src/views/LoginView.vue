@@ -9,7 +9,7 @@
       <div class="auth-field">
         <label>Contraseña:</label>
         <input v-model="form.password" :type="verClave ? 'text':'password'" required>
-        <button class="toggle-pass" type="button" @click="verClave=!verClave">👁</button>
+        <button class="toggle-pass" :class="{activo: verClave}" type="button" :aria-pressed="verClave" :aria-label="verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="verClave=!verClave">👁️</button>
       </div>
       <button type="button" class="auth-forgot" @click="mostrarAyudaClave = !mostrarAyudaClave">Olvidé mi contraseña</button>
       <p v-if="mostrarAyudaClave" class="imagen-nota" style="font-size:13px;">

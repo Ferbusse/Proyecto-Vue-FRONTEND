@@ -25,11 +25,12 @@
             <div class="icons">
               <button
                 type="button"
+                class="admin-btn admin-btn-borrar"
                 :disabled="!seleccionados.length"
                 :title="seleccionados.length ? 'Eliminar seleccionadas' : 'Seleccioná al menos una orden'"
                 @click="eliminarSeleccionadas"
-              >🗑</button>
-              <button type="button" title="Actualizar" @click="cargarOrdenes">⟳</button>
+              ><span aria-hidden="true">🗑</span> Borrar</button>
+              <button type="button" class="admin-btn admin-btn-neutro" title="Actualizar" @click="cargarOrdenes"><span aria-hidden="true">⟳</span> Actualizar</button>
             </div>
             <div class="select-all">
               <label>
@@ -40,21 +41,26 @@
             </div>
           </div>
 
-          <div class="admin-header-row">
-            <div class="administrar-h">Orden</div>
-            <div class="col">Cliente</div><div class="col">Fecha</div><div class="col">Total (UYU)</div><div class="col">Estado</div>
-            <div class="chk-spacer"></div>
-          </div>
+          <div class="admin-table-scroll">
+            <div class="admin-header-row">
+              <col-ordenable class="administrar-h" clave="id" :orden="orden" @ordenar="ordenarPor">Orden</col-ordenable>
+              <col-ordenable class="col" clave="cliente" :orden="orden" @ordenar="ordenarPor">Cliente</col-ordenable>
+              <col-ordenable class="col" clave="fecha" :orden="orden" @ordenar="ordenarPor">Fecha</col-ordenable>
+              <col-ordenable class="col" clave="total" :orden="orden" @ordenar="ordenarPor">Total (UYU)</col-ordenable>
+              <col-ordenable class="col" clave="estado" :orden="orden" @ordenar="ordenarPor">Estado</col-ordenable>
+              <div class="chk-spacer"></div>
+            </div>
 
-          <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando órdenes…</p>
+            <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando órdenes…</p>
 
-          <div class="admin-row" v-for="orden in ordenes" :key="orden.id">
-            <a class="administrar" @click="abrirDetalle(orden)">Administrar</a>
-            <div class="col">{{ orden.cliente }}</div>
-            <div class="col">{{ orden.fecha }}</div>
-            <div class="col">{{ formatearPrecio(orden.total) }}</div>
-            <div class="col"><span class="estado-badge" :style="{background: estilosEstado[orden.estado].fondo, color: estilosEstado[orden.estado].color}">{{ estilosEstado[orden.estado].etiqueta }}</span></div>
-            <input class="chk" type="checkbox" :value="orden.id" v-model="seleccionados" :aria-label="'Seleccionar orden ' + orden.id">
+            <div class="admin-row" v-for="ordenFila in ordenesOrdenadas" :key="ordenFila.id">
+              <a class="administrar" @click="abrirDetalle(ordenFila)">Administrar</a>
+              <div class="col">{{ ordenFila.cliente }}</div>
+              <div class="col">{{ ordenFila.fecha }}</div>
+              <div class="col">{{ formatearPrecio(ordenFila.total) }}</div>
+              <div class="col"><span class="estado-badge" :style="{background: estilosEstado[ordenFila.estado].fondo, color: estilosEstado[ordenFila.estado].color}">{{ estilosEstado[ordenFila.estado].etiqueta }}</span></div>
+              <input class="chk" type="checkbox" :value="ordenFila.id" v-model="seleccionados" :aria-label="'Seleccionar orden ' + ordenFila.id">
+            </div>
           </div>
 
           <p v-if="!cargando && !ordenes.length && !error" class="producto-vacio">No hay órdenes registradas.</p>
@@ -104,7 +110,10 @@
 import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
+import { aplicarEnLote } from '../../utils/lote.js';
 import { formatearPrecio } from '../../catalog.js';
+import ColOrdenable from '../../components/ColOrdenable.vue';
+import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
 
 // Colores y etiquetas de cada estado posible de una orden.
 const ESTILOS_ESTADO = {
@@ -119,6 +128,15 @@ const ESTILOS_ESTADO = {
 // según cómo lo haya armado cada uno — probamos varias formas posibles
 // para cada dato, así esta pantalla no se rompe si el formato real
 // difiere un poco de lo que asumimos acá.
+// Qué valor se compara al ordenar por cada columna de la tabla.
+const VALORES_ORDEN = {
+  id: orden => Number(orden.id),
+  cliente: orden => orden.cliente,
+  fecha: orden => orden.fechaMs,
+  total: orden => orden.total,
+  estado: orden => ESTILOS_ESTADO[orden.estado].etiqueta
+};
+
 function normalizarOrden(ordenBackend) {
   const cliente = ordenBackend.cliente || ordenBackend.usuario?.name || ordenBackend.nombre_cliente || 'Sin datos';
   const fechaCruda = ordenBackend.fecha || ordenBackend.created_at || ordenBackend.fecha_creacion;
@@ -130,6 +148,8 @@ function normalizarOrden(ordenBackend) {
     id: ordenBackend.id,
     cliente,
     fecha: fechaCruda ? new Date(fechaCruda).toLocaleDateString('es-UY') : '—',
+    // fecha en milisegundos, solo para poder ordenar bien por esta columna
+    fechaMs: fechaCruda ? new Date(fechaCruda).getTime() : null,
     total,
     estado,
     items: itemsCrudos.map(item => ({
@@ -141,10 +161,11 @@ function normalizarOrden(ordenBackend) {
 
 export default {
   name: 'AdminOrdenesView',
-  components: { AdminTopbar, AdminSidebar },
+  components: { AdminTopbar, AdminSidebar, ColOrdenable },
   data() {
     return {
       ordenes: [],
+      orden: { clave: null, direccion: 'asc' },
       seleccionados: [],
       cargando: false,
       error: '',
@@ -166,6 +187,9 @@ export default {
         this.seleccionados = marcar ? this.ordenes.map(o => o.id) : [];
       }
     },
+    ordenesOrdenadas() {
+      return ordenarLista(this.ordenes, this.orden, VALORES_ORDEN);
+    },
     resumenPorEstado() {
       return Object.keys(ESTILOS_ESTADO).map(estado => ({
         estado,
@@ -178,6 +202,9 @@ export default {
   },
   methods: {
     formatearPrecio,
+    ordenarPor(clave) {
+      this.orden = alternarOrden(this.orden, clave);
+    },
     async cargarOrdenes() {
       this.cargando = true;
       this.error = '';
@@ -223,14 +250,11 @@ export default {
       if (!confirmado) return;
 
       this.error = '';
-      try {
-        await Promise.all(this.seleccionados.map(id => api.delete(`/ordenes/${id}`)));
-        this.seleccionados = [];
-        await this.cargarOrdenes();
-      } catch (requestError) {
-        console.error('Error al eliminar:', requestError);
-        this.error = 'No se pudieron eliminar algunas órdenes.';
-      }
+      const fallidos = await aplicarEnLote(this.seleccionados, id => api.delete(`/ordenes/${id}`));
+      // los que fallaron quedan seleccionados, para poder reintentar
+      this.seleccionados = fallidos;
+      await this.cargarOrdenes();
+      if (fallidos.length) this.error = 'No se pudieron eliminar algunas órdenes.';
     }
   }
 };

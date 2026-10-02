@@ -16,12 +16,12 @@
       <div class="auth-field">
         <label>Contraseña:*</label>
         <input v-model="form.password" :type="verClave1 ? 'text':'password'" minlength="6" required>
-        <button class="toggle-pass" type="button" @click="verClave1=!verClave1">👁</button>
+        <button class="toggle-pass" :class="{activo: verClave1}" type="button" :aria-pressed="verClave1" :aria-label="verClave1 ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="verClave1 ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="verClave1=!verClave1">👁️</button>
       </div>
       <div class="auth-field">
         <label>Repetir contraseña:*</label>
         <input v-model="form.password_confirmation" :type="verClave2 ? 'text':'password'" minlength="6" required>
-        <button class="toggle-pass" type="button" @click="verClave2=!verClave2">👁</button>
+        <button class="toggle-pass" :class="{activo: verClave2}" type="button" :aria-pressed="verClave2" :aria-label="verClave2 ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="verClave2 ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="verClave2=!verClave2">👁️</button>
       </div>
 
       <p v-if="error" class="auth-error">{{ error }}</p>

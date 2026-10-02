@@ -18,7 +18,7 @@
         </div>
         <div class="admin-row" v-for="filaX in pilaDeFilas" :key="filaX.id">
           <a class="administrar" @click="gritoDemo('Editar producto (demo)')">Administrar</a>
-          <div class="col">NOMBRE PRODUCTO<br>2000.00$ UYU</div>
+          <div class="col">NOMBRE PRODUCTO<br>UYU $2000.00</div>
           <div class="col">Categoria</div>
           <div class="col">{{filaX.id}}</div>
           <div class="thumb img-placeholder"></div>

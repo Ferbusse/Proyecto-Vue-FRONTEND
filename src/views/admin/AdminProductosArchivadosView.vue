@@ -9,18 +9,21 @@
           <p>Productos que ya no se muestran en la tienda. Podés restaurarlos o borrarlos definitivamente.</p>
         </div>
 
-        <router-link :to="{name:'admin-productos'}" class="cal-hoy-btn" style="display:inline-block; margin-bottom:16px;">← Volver a Productos</router-link>
+        <router-link :to="{name:'admin-productos'}" class="admin-btn admin-btn-neutro" style="margin-bottom:16px;">← Volver a Productos</router-link>
 
         <div class="admin-table-wrap">
           <div class="admin-header-row">
-            <div class="administrar-h">Producto</div>
-            <div class="col">Precio de venta</div><div class="col">Categoría</div><div class="col">Stock</div><div class="col">ID</div>
+            <col-ordenable class="administrar-h" clave="nombre" :orden="orden" @ordenar="ordenarPor">Producto</col-ordenable>
+            <col-ordenable class="col" clave="precio" :orden="orden" @ordenar="ordenarPor">Precio de venta</col-ordenable>
+            <col-ordenable class="col" clave="categoria" :orden="orden" @ordenar="ordenarPor">Categoría</col-ordenable>
+            <col-ordenable class="col" clave="stock" :orden="orden" @ordenar="ordenarPor">Stock</col-ordenable>
+            <col-ordenable class="col" clave="id" :orden="orden" @ordenar="ordenarPor">ID</col-ordenable>
           </div>
 
           <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando…</p>
 
-          <div class="admin-row" v-for="producto in productos" :key="producto.id">
-            <a class="administrar" @click="restaurar(producto)">Restaurar</a>
+          <div class="admin-row" v-for="producto in productosOrdenados" :key="producto.id">
+            <div class="administrar"><button type="button" class="admin-btn admin-btn-restaurar" @click="restaurar(producto)"><span aria-hidden="true">↺</span> Restaurar</button></div>
             <div class="col">{{ producto.nombre }}<br>{{ formatearPrecio(producto.precio_venta) }}</div>
             <div class="col">{{ obtenerCategoriaNombre(producto) }}</div>
             <div class="col">{{ producto.stock }}</div>
@@ -40,22 +43,42 @@ import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
 import { formatearPrecio } from '../../catalog.js';
+import ColOrdenable from '../../components/ColOrdenable.vue';
+import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
+
+// Qué valor se compara al ordenar por cada columna de la tabla.
+const VALORES_ORDEN = {
+  nombre: producto => producto.nombre,
+  precio: producto => Number(producto.precio_venta),
+  categoria: producto => producto.categorias?.[0]?.nombre || null,
+  stock: producto => Number(producto.stock),
+  id: producto => Number(producto.id)
+};
 
 export default {
   name: 'AdminProductosArchivadosView',
-  components: { AdminTopbar, AdminSidebar },
+  components: { AdminTopbar, AdminSidebar, ColOrdenable },
   data() {
     return {
       productos: [],
+      orden: { clave: null, direccion: 'asc' },
       cargando: false,
       error: ''
     };
+  },
+  computed: {
+    productosOrdenados() {
+      return ordenarLista(this.productos, this.orden, VALORES_ORDEN);
+    }
   },
   async mounted() {
     await this.cargarArchivados();
   },
   methods: {
     formatearPrecio,
+    ordenarPor(clave) {
+      this.orden = alternarOrden(this.orden, clave);
+    },
     obtenerCategoriaNombre(producto) {
       const categoria = producto.categorias && producto.categorias[0];
       return categoria ? categoria.nombre : 'Sin categoría';

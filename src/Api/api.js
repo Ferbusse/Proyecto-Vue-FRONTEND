@@ -12,7 +12,9 @@ import axios from 'axios';
 // navegador nunca llegaba a mandar el archivo con el formato que
 // Laravel espera, así que la imagen se perdía en el camino.
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  // La URL del backend se puede cambiar con VITE_API_URL (ver .env.example);
+  // si no está definida, usa el Laravel local de siempre.
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
 });
 
 apiClient.interceptors.request.use((config) => {

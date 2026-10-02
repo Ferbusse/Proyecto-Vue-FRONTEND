@@ -99,15 +99,16 @@ export const useProductosStore = defineStore('productos', {
           this.lista = CATALOGO;
           this.usandoCatalogoDemo = true;
         }
+        this.cargado = true;
       } catch (error) {
         console.error('No se pudieron cargar los productos del backend, uso el catálogo de ejemplo:', error);
         this.lista = CATALOGO;
         this.usandoCatalogoDemo = true;
-        // Permite que una carga posterior recupere los productos reales y sus imágenes.
+        // Queda en false a propósito: así la próxima pantalla que llame a
+        // cargar() vuelve a intentar traer los productos reales.
         this.cargado = false;
       } finally {
         this.cargando = false;
-        this.cargado = true;
       }
     },
     async refrescar() {

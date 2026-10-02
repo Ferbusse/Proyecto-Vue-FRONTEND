@@ -92,6 +92,7 @@
 <script>
 import { useCarritoStore } from '../stores/carrito.js';
 import PagoPasos from './PagoPasos.vue';
+import { crearPedido } from '../Api/cuenta.js';
 
 export default {
   name: 'PaymentModals',
@@ -132,9 +133,18 @@ export default {
   },
   methods: {
     avisoDemo(msg) { alert(msg); },
+    // Guarda el pedido en la cuenta del cliente. No espera la respuesta ni
+    // frena el final de la compra: si falla, solo queda en la consola.
+    registrarPedido(pedido) {
+      if (!pedido || !pedido.items.length) return;
+      crearPedido(pedido).catch(error => console.error('No se pudo registrar el pedido:', error));
+    },
     continuar() {
+      // la foto del pedido se toma antes de que el pago vacíe el carrito
+      const pedido = this.carrito.metodoPagoSeleccionado ? this.carrito.armarPedido() : null;
       const resultado = this.carrito.continuarPago();
       if (resultado === 'transferencia') {
+        this.registrarPedido(pedido);
         this.$router.push({ name: 'inicio' });
       }
       // si resultado === 'tarjeta', el modal de tarjeta ya se abrió solo
@@ -149,6 +159,7 @@ export default {
         return;
       }
       this.errorTarjeta = '';
+      this.registrarPedido(this.carrito.armarPedido());
       this.carrito.finalizarPago(() => {
         this.$router.push({ name: 'inicio' });
       });

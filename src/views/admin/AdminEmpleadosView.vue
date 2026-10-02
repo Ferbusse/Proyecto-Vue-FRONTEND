@@ -14,11 +14,12 @@
             <div class="icons">
               <button
                 type="button"
+                class="admin-btn admin-btn-borrar"
                 :disabled="!seleccionados.length"
                 :title="seleccionados.length ? 'Eliminar seleccionados' : 'Seleccioná al menos un empleado'"
                 @click="eliminarSeleccionados"
-              >🗑</button>
-              <button type="button" title="Agregar empleado" @click="abrirParaCrear">＋</button>
+              ><span aria-hidden="true">🗑</span> Borrar</button>
+              <button type="button" class="admin-btn admin-btn-agregar" title="Agregar empleado" @click="abrirParaCrear"><span aria-hidden="true">+</span> Añadir</button>
             </div>
             <div class="select-all">
               <label>
@@ -30,14 +31,17 @@
           </div>
 
           <div class="admin-header-row">
-            <div class="administrar-h">Empleado</div>
-            <div class="col">Puesto</div><div class="col">Contacto</div><div class="col">Estado</div><div class="col">ID</div>
+            <col-ordenable class="administrar-h" clave="nombre" :orden="orden" @ordenar="ordenarPor">Empleado</col-ordenable>
+            <col-ordenable class="col" clave="puesto" :orden="orden" @ordenar="ordenarPor">Puesto</col-ordenable>
+            <col-ordenable class="col" clave="contacto" :orden="orden" @ordenar="ordenarPor">Contacto</col-ordenable>
+            <col-ordenable class="col" clave="estado" :orden="orden" @ordenar="ordenarPor">Estado</col-ordenable>
+            <col-ordenable class="col" clave="id" :orden="orden" @ordenar="ordenarPor">ID</col-ordenable>
             <div class="chk-spacer"></div>
           </div>
 
           <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando empleados…</p>
 
-          <div class="admin-row" v-for="empleado in empleados" :key="empleado.id">
+          <div class="admin-row" v-for="empleado in empleadosOrdenados" :key="empleado.id">
             <a class="administrar" @click="abrirParaEditar(empleado)">Administrar</a>
             <div class="col">{{ empleado.nombre }}</div>
             <div class="col">{{ empleado.puesto }}</div>
@@ -99,15 +103,28 @@
 import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
+import { aplicarEnLote } from '../../utils/lote.js';
+import ColOrdenable from '../../components/ColOrdenable.vue';
+import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
 
 const EMPLEADO_VACIO = { nombre: '', puesto: '', email: '', telefono: '', activo: true };
 
+// Qué valor se compara al ordenar por cada columna de la tabla.
+const VALORES_ORDEN = {
+  nombre: empleado => empleado.nombre,
+  puesto: empleado => empleado.puesto,
+  contacto: empleado => empleado.email || empleado.telefono,
+  estado: empleado => (empleado.activo ? 0 : 1), // activos primero en orden ascendente
+  id: empleado => Number(empleado.id)
+};
+
 export default {
   name: 'AdminEmpleadosView',
-  components: { AdminTopbar, AdminSidebar },
+  components: { AdminTopbar, AdminSidebar, ColOrdenable },
   data() {
     return {
       empleados: [],
+      orden: { clave: null, direccion: 'asc' },
       seleccionados: [],
 
       cargando: false,
@@ -121,6 +138,9 @@ export default {
     };
   },
   computed: {
+    empleadosOrdenados() {
+      return ordenarLista(this.empleados, this.orden, VALORES_ORDEN);
+    },
     todosSeleccionados: {
       get() {
         return this.empleados.length > 0 && this.seleccionados.length === this.empleados.length;
@@ -136,6 +156,9 @@ export default {
     this.cargando = false;
   },
   methods: {
+    ordenarPor(clave) {
+      this.orden = alternarOrden(this.orden, clave);
+    },
     estiloEstado(activo) {
       return activo
         ? { background: '#e6f8ec', color: '#1f8a44' }
@@ -198,14 +221,11 @@ export default {
       if (!confirmado) return;
 
       this.error = '';
-      try {
-        await Promise.all(this.seleccionados.map(id => api.delete(`/empleados/${id}`)));
-        this.seleccionados = [];
-        await this.cargarEmpleados();
-      } catch (requestError) {
-        console.error('Error al eliminar empleados:', requestError);
-        this.error = 'No se pudieron eliminar algunos empleados.';
-      }
+      const fallidos = await aplicarEnLote(this.seleccionados, id => api.delete(`/empleados/${id}`));
+      // los que fallaron quedan seleccionados, para poder reintentar
+      this.seleccionados = fallidos;
+      await this.cargarEmpleados();
+      if (fallidos.length) this.error = 'No se pudieron eliminar algunos empleados.';
     }
   }
 };

@@ -14,23 +14,26 @@
             <div class="icons">
               <button
                 type="button"
+                class="admin-btn admin-btn-neutro"
                 :disabled="!seleccionados.length"
                 :title="seleccionados.length ? (seleccionadosVisibles ? 'Ocultar seleccionados del carrusel' : 'Mostrar seleccionados en el carrusel') : 'Seleccioná al menos un banner'"
                 @click="alternarVisibilidadSeleccionados"
-              >👁</button>
+              ><span aria-hidden="true">👁</span> {{ seleccionados.length && seleccionadosVisibles ? 'Ocultar' : 'Mostrar' }}</button>
               <button
                 type="button"
+                class="admin-btn admin-btn-borrar"
                 :disabled="!seleccionados.length"
                 :title="seleccionados.length ? 'Eliminar seleccionados' : 'Seleccioná al menos un banner'"
                 @click="eliminarSeleccionados"
-              >🗑</button>
+              ><span aria-hidden="true">🗑</span> Borrar</button>
               <button
                 type="button"
+                class="admin-btn admin-btn-archivar"
                 :disabled="!seleccionados.length"
                 :title="seleccionados.length ? 'Archivar seleccionados' : 'Seleccioná al menos un banner'"
                 @click="archivarSeleccionados"
-              >🗄</button>
-              <button type="button" title="Agregar banner" @click="abrirParaCrear">＋</button>
+              ><span aria-hidden="true">🗄</span> Archivar</button>
+              <button type="button" class="admin-btn admin-btn-agregar" title="Agregar banner" @click="abrirParaCrear"><span aria-hidden="true">+</span> Añadir</button>
             </div>
             <div class="select-all">
               <label>
@@ -38,28 +41,29 @@
                 Seleccionar todos
               </label>
               <span v-if="seleccionados.length" class="select-count">({{ seleccionados.length }} seleccionados)</span>
-              <router-link :to="{name:'admin-banners-archivados'}" class="cal-hoy-btn" style="margin-left:14px;">Ver archivados</router-link>
+              <router-link :to="{name:'admin-banners-archivados'}" class="admin-btn admin-btn-neutro" style="margin-left:14px;"><span aria-hidden="true">🗄</span> Ver archivados</router-link>
             </div>
           </div>
 
           <div class="admin-header-row">
-            <div class="administrar-h">Banner</div>
-            <div class="col">Estado</div><div class="col">Orden</div>
+            <col-ordenable class="administrar-h" clave="banner" :orden="ordenTabla" @ordenar="ordenarPor">Banner</col-ordenable>
+            <col-ordenable class="col" clave="estado" :orden="ordenTabla" @ordenar="ordenarPor">Estado</col-ordenable>
+            <col-ordenable class="col" clave="orden" :orden="ordenTabla" @ordenar="ordenarPor">Orden</col-ordenable>
             <div class="thumb-spacer"></div><div class="chk-spacer"></div>
           </div>
 
           <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando banners…</p>
 
-          <div class="admin-row" v-for="(banner, i) in banners" :key="banner.id">
+          <div class="admin-row" v-for="banner in bannersOrdenados" :key="banner.id">
             <a class="administrar" @click="abrirParaEditar(banner)">Administrar</a>
-            <div class="col" v-if="banner.titulo" v-html="banner.titulo"></div>
+            <div class="col" v-if="tituloLimpio(banner)" v-html="tituloLimpio(banner)"></div>
             <div class="col texto-atenuado" v-else>Banner #{{ banner.id }}</div>
             <div class="col"><span class="estado-badge" :style="estiloEstado(banner.activo)">{{ banner.activo ? 'En el carrusel' : 'Oculto' }}</span></div>
             <div class="col orden-col">
               {{ banner.orden }}
               <span class="orden-flechas">
-                <button type="button" title="Subir" :disabled="i === 0" @click="moverOrden(banner, -1)">▲</button>
-                <button type="button" title="Bajar" :disabled="i === banners.length - 1" @click="moverOrden(banner, 1)">▼</button>
+                <button type="button" title="Subir" :disabled="indiceOriginal(banner) === 0" @click="moverOrden(banner, -1)">▲</button>
+                <button type="button" title="Bajar" :disabled="indiceOriginal(banner) === banners.length - 1" @click="moverOrden(banner, 1)">▼</button>
               </span>
             </div>
             <div class="thumb img-placeholder banner-thumb" :style="!obtenerUrlImagenBanner(banner) ? {background: colorDeMuestra(banner.color)} : {}">
@@ -97,6 +101,25 @@
               </div>
             </div>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ban-titulo">Título <span class="texto-atenuado">(opcional)</span></label>
+              <input id="ban-titulo" v-model="formulario.titulo" type="text" maxlength="255" placeholder="Ej: Hasta 40% OFF">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ban-subtitulo">Subtítulo <span class="texto-atenuado">(opcional)</span></label>
+              <input id="ban-subtitulo" v-model="formulario.subtitulo" type="text" maxlength="255" placeholder="Ej: Renová tus accesorios al mejor precio">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ban-etiqueta">Texto chico <span class="texto-atenuado">(opcional)</span></label>
+              <input id="ban-etiqueta" v-model="formulario.etiqueta" type="text" maxlength="255" placeholder="Ej: OFERTA DE LA SEMANA">
+              <p class="imagen-nota">Aparece arriba del título, en letra pequeña.</p>
+            </div>
+          </div>
           <p v-if="errorFormulario" class="auth-error">{{ errorFormulario }}</p>
           <button class="modal-btn" type="submit" :disabled="guardando">
             {{ guardando ? 'Guardando...' : (editandoId ? 'Guardar cambios' : 'Agregar') }}
@@ -111,11 +134,22 @@
 import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
+import { aplicarEnLote } from '../../utils/lote.js';
+import ColOrdenable from '../../components/ColOrdenable.vue';
+import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
+import { limpiarTexto, textoParaEnviar } from '../../utils/textoBanner.js';
 
-// El formulario ya no pide etiqueta/título/subtítulo/ícono/color: el
-// banner ahora es solo la imagen. Estos campos quedan en la base por si
-// algún banner viejo los tenía cargados, pero no se vuelven a editar acá.
-const BANNER_VACIO = {};
+// El formulario pide la imagen (obligatoria al crear) y tres textos
+// opcionales: título, subtítulo y "texto chico" (la etiqueta que va
+// arriba del título). El ícono y el color siguen sin editarse acá.
+const BANNER_VACIO = { titulo: '', subtitulo: '', etiqueta: '' };
+
+// Qué valor se compara al ordenar por cada columna de la tabla.
+const VALORES_ORDEN = {
+  banner: banner => limpiarTexto(banner.titulo).replace(/<[^>]*>/g, '') || 'Banner #' + banner.id,
+  estado: banner => (banner.activo ? 0 : 1), // en el carrusel primero en orden ascendente
+  orden: banner => Number(banner.orden)
+};
 
 // Mismos degradés que .banner-slide-1..4 en style.css, para que la
 // muestra de color en la tabla del admin coincida con lo que se ve en
@@ -140,10 +174,11 @@ export function obtenerUrlImagenBanner(banner) {
 
 export default {
   name: 'AdminBannersView',
-  components: { AdminTopbar, AdminSidebar },
+  components: { AdminTopbar, AdminSidebar, ColOrdenable },
   data() {
     return {
       banners: [],
+      ordenTabla: { clave: null, direccion: 'asc' },
       seleccionados: [],
 
       cargando: false,
@@ -161,6 +196,9 @@ export default {
     };
   },
   computed: {
+    bannersOrdenados() {
+      return ordenarLista(this.banners, this.ordenTabla, VALORES_ORDEN);
+    },
     todosSeleccionados: {
       get() {
         return this.banners.length > 0 && this.seleccionados.length === this.banners.length;
@@ -181,6 +219,18 @@ export default {
   },
   methods: {
     obtenerUrlImagenBanner,
+    tituloLimpio(banner) {
+      return limpiarTexto(banner.titulo);
+    },
+    ordenarPor(clave) {
+      this.ordenTabla = alternarOrden(this.ordenTabla, clave);
+    },
+    // Las flechas ▲▼ cambian el orden real del carrusel, que es el de la
+    // lista original; por eso usan la posición original aunque la tabla
+    // se esté viendo ordenada por otra columna.
+    indiceOriginal(banner) {
+      return this.banners.findIndex(b => b.id === banner.id);
+    },
     estiloEstado(activo) {
       return activo
         ? { background: '#e6f8ec', color: '#1f8a44' }
@@ -282,7 +332,11 @@ export default {
     abrirParaEditar(banner) {
       this.editandoId = banner.id;
       this.errorFormulario = '';
-      this.formulario = {};
+      this.formulario = {
+        titulo: limpiarTexto(banner.titulo),
+        subtitulo: limpiarTexto(banner.subtitulo),
+        etiqueta: limpiarTexto(banner.etiqueta)
+      };
       this.limpiarImagenDelFormulario();
       // si el banner ya tiene una imagen, la mostramos como vista previa
       this.previewImagen = obtenerUrlImagenBanner(banner);
@@ -293,8 +347,8 @@ export default {
       this.limpiarImagenDelFormulario();
     },
     async guardarBanner() {
-      // El único campo del formulario es la imagen; al crear, hace falta
-      // sí o sí (si no, no habría nada que mostrar en el banner).
+      // Los textos son opcionales; la imagen, en cambio, hace falta al
+      // crear (si no, no habría nada que mostrar en el banner).
       if (!this.editandoId && !this.archivoImagen) {
         this.errorFormulario = 'Subí una imagen para el banner.';
         return;
@@ -306,6 +360,12 @@ export default {
         // Igual que en productos: mandamos multipart/form-data para poder
         // adjuntar la imagen.
         const datos = new FormData();
+        // Los textos vacíos se mandan como un espacio invisible (ver
+        // utils/textoBanner.js) porque el backend no acepta vacíos en
+        // título/etiqueta. El subtítulo sí admite vacío.
+        datos.append('titulo', textoParaEnviar(this.formulario.titulo));
+        datos.append('etiqueta', textoParaEnviar(this.formulario.etiqueta));
+        datos.append('subtitulo', (this.formulario.subtitulo || '').trim());
         if (this.archivoImagen) {
           datos.append('imagen', this.archivoImagen);
         } else if (this.sacarImagenExistente) {
@@ -363,15 +423,12 @@ export default {
       if (!this.seleccionados.length) return;
 
       this.error = '';
-      try {
-        const activo = !this.seleccionadosVisibles;
-        await Promise.all(this.seleccionados.map(id => api.put(`/banners/${id}`, { activo })));
-        this.seleccionados = [];
-        await this.cargarBanners();
-      } catch (requestError) {
-        console.error('Error al cambiar visibilidad de banners:', requestError);
-        this.error = 'No se pudo cambiar la visibilidad de algunos banners.';
-      }
+      const activo = !this.seleccionadosVisibles;
+      const fallidos = await aplicarEnLote(this.seleccionados, id => api.put(`/banners/${id}`, { activo }));
+      // los que fallaron quedan seleccionados, para poder reintentar
+      this.seleccionados = fallidos;
+      await this.cargarBanners();
+      if (fallidos.length) this.error = 'No se pudo cambiar la visibilidad de algunos banners.';
     },
     async eliminarSeleccionados() {
       if (!this.seleccionados.length) return;
@@ -380,29 +437,23 @@ export default {
       if (!confirmado) return;
 
       this.error = '';
-      try {
-        await Promise.all(this.seleccionados.map(id => api.delete(`/banners/${id}`)));
-        this.seleccionados = [];
-        await this.cargarBanners();
-      } catch (requestError) {
-        console.error('Error al eliminar banners:', requestError);
-        this.error = 'No se pudieron eliminar algunos banners.';
-      }
+      const fallidos = await aplicarEnLote(this.seleccionados, id => api.delete(`/banners/${id}`));
+      // los que fallaron quedan seleccionados, para poder reintentar
+      this.seleccionados = fallidos;
+      await this.cargarBanners();
+      if (fallidos.length) this.error = 'No se pudieron eliminar algunos banners.';
     },
     async archivarSeleccionados() {
       if (!this.seleccionados.length) return;
 
       this.error = '';
-      try {
-        // Un banner archivado sale del carrusel y de este listado, pero
-        // sigue existiendo: se puede restaurar desde "Banners archivados".
-        await Promise.all(this.seleccionados.map(id => api.put(`/banners/${id}`, { archivado: true })));
-        this.seleccionados = [];
-        await this.cargarBanners();
-      } catch (requestError) {
-        console.error('Error al archivar:', requestError);
-        this.error = 'No se pudieron archivar algunos banners.';
-      }
+      // Un banner archivado sale del carrusel y de este listado, pero
+      // sigue existiendo: se puede restaurar desde "Banners archivados".
+      const fallidos = await aplicarEnLote(this.seleccionados, id => api.put(`/banners/${id}`, { archivado: true }));
+      // los que fallaron quedan seleccionados, para poder reintentar
+      this.seleccionados = fallidos;
+      await this.cargarBanners();
+      if (fallidos.length) this.error = 'No se pudieron archivar algunos banners.';
     }
   }
 };

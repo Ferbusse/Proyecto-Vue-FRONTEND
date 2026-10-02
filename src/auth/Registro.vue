@@ -9,12 +9,12 @@
       <div class="auth-field">
         <label>Contraseña:*</label>
         <input :type="mostrarClaveUno ? 'text':'password'">
-        <button class="toggle-pass" type="button" @click="mostrarClaveUno=!mostrarClaveUno">👁</button>
+        <button class="toggle-pass" :class="{activo: mostrarClaveUno}" type="button" :aria-pressed="mostrarClaveUno" :aria-label="mostrarClaveUno ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="mostrarClaveUno ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="mostrarClaveUno=!mostrarClaveUno">👁️</button>
       </div>
       <div class="auth-field">
         <label>Repetir contraseña:*</label>
         <input :type="mostrarClaveDos ? 'text':'password'">
-        <button class="toggle-pass" type="button" @click="mostrarClaveDos=!mostrarClaveDos">👁</button>
+        <button class="toggle-pass" :class="{activo: mostrarClaveDos}" type="button" :aria-pressed="mostrarClaveDos" :aria-label="mostrarClaveDos ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="mostrarClaveDos ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="mostrarClaveDos=!mostrarClaveDos">👁️</button>
       </div>
       <button class="auth-submit" @click="$router.push({name:'login'})">Ingresar</button>
       <div class="auth-switch">En cambio... <router-link :to="{name:'login'}">Iniciar Sesión</router-link></div>

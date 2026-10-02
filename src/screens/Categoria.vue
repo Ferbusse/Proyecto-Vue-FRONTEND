@@ -17,7 +17,7 @@
         <div class="filter-box">
           <h4>Filtrar por precio</h4>
           <input type="range" min="290" max="3500" v-model="limitePlata">
-          <div class="price-label">Precio: 290$ – {{limitePlata}}$</div>
+          <div class="price-label">Precio: $290 – ${{limitePlata}}</div>
         </div>
       </div>
     </div>

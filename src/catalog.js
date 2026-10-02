@@ -23,9 +23,10 @@ export function obtenerProducto(id) {
   return CATALOGO.find(producto => producto.id === id);
 }
 
-// Da formato a un número como precio en pesos uruguayos, ej: 890.00$ UYU
+// Da formato a un número como precio en pesos uruguayos, ej: UYU $890.00
 export function formatearPrecio(n) {
-  return n.toFixed(2) + '$ UYU';
+  const numero = Number(n);
+  return 'UYU $' + (Number.isFinite(numero) ? numero : 0).toFixed(2);
 }
 
 // Divide un arreglo en grupos de "size" elementos.

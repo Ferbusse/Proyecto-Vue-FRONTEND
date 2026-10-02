@@ -19,14 +19,14 @@
               @click="seleccionarCategoria(categoria.id)"
             >{{ categoria.nombre.toUpperCase() }}</a>
           </div>
-          <p v-else class="producto-vacio">Cargando categorías…</p>
+          <p v-else-if="cargandoCategorias" class="producto-vacio">Cargando categorías…</p>
           <div class="filter-box">
             <h4>Filtrar por precio</h4>
-            <label class="price-sub-label">Mínimo: {{ filtroPrecioMin }}$</label>
-            <input type="range" min="290" max="3500" v-model.number="filtroPrecioMin" @input="alCambiarPrecioMin">
-            <label class="price-sub-label">Máximo: {{ filtroPrecioMax }}$</label>
-            <input type="range" min="290" max="3500" v-model.number="filtroPrecioMax" @input="alCambiarPrecioMax">
-            <div class="price-label">Precio: {{filtroPrecioMin}}$ – {{filtroPrecioMax}}$</div>
+            <label class="price-sub-label">Mínimo: ${{ filtroPrecioMin }}</label>
+            <input type="range" :min="rangoPrecio.min" :max="rangoPrecio.max" v-model.number="filtroPrecioMin" @input="alCambiarPrecioMin">
+            <label class="price-sub-label">Máximo: ${{ filtroPrecioMax }}</label>
+            <input type="range" :min="rangoPrecio.min" :max="rangoPrecio.max" v-model.number="filtroPrecioMax" @input="alCambiarPrecioMax">
+            <div class="price-label">Precio: ${{filtroPrecioMin}} – ${{filtroPrecioMax}}</div>
           </div>
         </div>
       </div>
@@ -36,14 +36,15 @@
           <select v-model="ordenarPor">
             <option value="menor">Menor Precio</option>
             <option value="mayor">Mayor Precio</option>
-            <option value="vendidos">Más vendidos</option>
+            <!-- "Más vendidos" vuelve cuando el backend exponga datos de ventas por
+                 producto (antes ordenaba por stock, que no es lo mismo). -->
           </select>
         </div>
         <p v-if="productos.cargando" class="producto-vacio">Cargando productos…</p>
         <div class="cat-grid">
           <cat-card v-for="producto in itemsPagina" :key="producto.id" :product="producto"></cat-card>
         </div>
-        <div v-if="!itemsGrilla.length" class="producto-vacio">No hay productos para esta categoría.</div>
+        <div v-if="!itemsGrilla.length && !productos.cargando" class="producto-vacio">No hay productos para esta categoría.</div>
         <div class="pagination" v-if="totalPaginas > 1">
           <button class="arrow-btn" :disabled="paginaActual === 1" @click="irAPagina(paginaActual - 1)">‹</button>
           <button v-for="n in totalPaginas" :key="n" :class="{active: n === paginaActual}" @click="irAPagina(n)">{{n}}</button>
@@ -70,14 +71,23 @@ export default {
     return {
       productos: useProductosStore(),
       categorias: [],
+      cargandoCategorias: true,
       categoriaSeleccionada: null,
-      filtroPrecioMin: 290,
-      filtroPrecioMax: 3500,
+      // null = sin tocar: arrancan en el mínimo/máximo real del catálogo
+      filtroPrecioMin: null,
+      filtroPrecioMax: null,
       ordenarPor: 'menor',
       paginaActual: 1
     };
   },
   computed: {
+    // Precio más bajo y más alto entre los productos cargados (redondeados
+    // hacia afuera), para armar el rango del filtro.
+    rangoPrecio() {
+      const precios = this.productos.lista.map(p => p.price).filter(Number.isFinite);
+      if (!precios.length) return { min: 0, max: 0 };
+      return { min: Math.floor(Math.min(...precios)), max: Math.ceil(Math.max(...precios)) };
+    },
     // Filtra primero por precio y luego, si hay una categoría seleccionada,
     // deja solo los productos que pertenecen a esa categoría.
     itemsGrilla() {
@@ -96,7 +106,6 @@ export default {
       const ordenada = [...lista];
       if (this.ordenarPor === 'menor') ordenada.sort((a, b) => a.price - b.price);
       if (this.ordenarPor === 'mayor') ordenada.sort((a, b) => b.price - a.price);
-      if (this.ordenarPor === 'vendidos') ordenada.sort((a, b) => Number(b.stock || 0) - Number(a.stock || 0));
       return ordenada;
     },
     // Los botones de paginación se arman según la cantidad real de
@@ -128,6 +137,17 @@ export default {
     // "varado" en una página que ya no existe.
     totalPaginas(nuevoTotal) {
       if (this.paginaActual > nuevoTotal) this.paginaActual = nuevoTotal;
+    },
+    // Cuando llegan (o cambian) los productos, el filtro se ajusta al
+    // rango real. Si estaba en el borde del rango anterior (o sin tocar),
+    // sigue al borde nuevo; si el usuario lo había movido, solo se acota.
+    rangoPrecio: {
+      immediate: true,
+      handler(nuevo, viejo) {
+        const enBorde = (valor, borde) => valor == null || (viejo && valor === borde);
+        this.filtroPrecioMin = enBorde(this.filtroPrecioMin, viejo?.min) ? nuevo.min : Math.min(Math.max(this.filtroPrecioMin, nuevo.min), nuevo.max);
+        this.filtroPrecioMax = enBorde(this.filtroPrecioMax, viejo?.max) ? nuevo.max : Math.max(Math.min(this.filtroPrecioMax, nuevo.max), nuevo.min);
+      }
     }
   },
   async mounted() {
@@ -142,6 +162,8 @@ export default {
       } catch (error) {
         console.error('Error al cargar categorías:', error);
         this.categorias = [];
+      } finally {
+        this.cargandoCategorias = false;
       }
     },
     seleccionarCategoria(categoriaId) {

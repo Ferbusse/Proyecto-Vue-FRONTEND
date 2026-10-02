@@ -8,7 +8,7 @@
       <div class="auth-field">
         <label>Contraseña:</label>
         <input :type="mostrarClave ? 'text':'password'">
-        <button class="toggle-pass" type="button" @click="mostrarClave=!mostrarClave">👁</button>
+        <button class="toggle-pass" :class="{activo: mostrarClave}" type="button" :aria-pressed="mostrarClave" :aria-label="mostrarClave ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="mostrarClave ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="mostrarClave=!mostrarClave">👁️</button>
       </div>
       <a class="auth-forgot">Olvidé mi contraseña</a>
       <button class="auth-submit" @click="$router.push({name:'inicio'})">Ingresar</button>

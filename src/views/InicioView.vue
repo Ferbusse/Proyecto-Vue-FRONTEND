@@ -74,10 +74,8 @@ export default {
     return {
       productos: useProductosStore(),
       cargandoNovedades: false,
-      // "Novedades" debería mostrar los productos más vendidos de la
-      // última semana. Mientras ese endpoint no exista en el backend,
-      // queda en null y el catálogo general se usa como respaldo (ver
-      // el comentario grande en cargarNovedades más abajo).
+      // Queda en null mientras el backend no tenga /mas-vendidos (o no
+      // haya ventas todavía); en ese caso se muestra el catálogo general.
       productosMasVendidos: null
     };
   },
@@ -93,46 +91,19 @@ export default {
     this.cargarNovedades();
   },
   methods: {
-    // ============================================================
-    // PENDIENTE DE BACKEND — para el compañero que arme el endpoint:
-    //
-    // Esta pantalla necesita un endpoint público (sin login) que
-    // devuelva los productos más vendidos de los últimos N días, por
-    // ejemplo:
-    //
-    //   GET /api/productos/mas-vendidos?dias=7
-    //
-    // Ya existe una consulta muy parecida (agrupa Detalle_Ventas por
-    // producto y ordena por cantidad vendida) en
-    // AnaliticasController@index — ahí se calcula sobre TODO el
-    // historial y solo para el panel de admin. Para este endpoint
-    // haría falta:
-    //   - Filtrar Detalle_Ventas/Ventas a los últimos $dias (join con
-    //     ventas.fecha, igual que hace AnaliticasController).
-    //   - Devolver los productos completos (no solo id/nombre/unidades
-    //     como en Analíticas), con los mismos campos que ya devuelve
-    //     GET /productos, para poder reusar normalizarProducto() del
-    //     lado del frontend sin cambios.
-    //   - Una ruta pública (sin ghost.auth), a diferencia de
-    //     /admin/... o /analiticas.
-    //
-    // Hasta que exista, este método intenta llamarlo igual: si el
-    // endpoint no está (404) o falla por cualquier motivo, no rompe
-    // nada — sencillamente se queda con el catálogo general como
-    // respaldo (ver el computed "filasInicio").
-    // ============================================================
     async cargarNovedades() {
       this.cargandoNovedades = true;
       try {
-        const response = await api.get('/productos/mas-vendidos', { params: { dias: 7 } });
+        const response = await api.get('/mas-vendidos');
         const productos = Array.isArray(response.data) ? response.data : [];
         if (productos.length) {
           this.productosMasVendidos = productos.map(normalizarProducto);
         }
       } catch (error) {
-        // Esperable mientras el endpoint no exista todavía: seguimos
-        // mostrando el catálogo general sin molestar al usuario.
-        console.info('Todavía no hay endpoint de "más vendidos" en el backend; muestro el catálogo general.');
+        // 404 = el endpoint todavía no existe en el backend: es esperable.
+        if (error.response?.status !== 404) {
+          console.error('No se pudieron cargar los productos más vendidos:', error);
+        }
       } finally {
         this.cargandoNovedades = false;
       }

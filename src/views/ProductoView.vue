@@ -1,7 +1,7 @@
 <template>
   <div class="view">
     <store-header></store-header>
-    <p v-if="!productos.cargado" class="producto-vacio">Cargando producto…</p>
+    <p v-if="!productos.lista.length" class="producto-vacio">Cargando producto…</p>
     <div v-else-if="!producto" class="producto-vacio" style="text-align:center; padding:60px 20px;">
       <p>No encontramos este producto. Puede que ya no esté disponible.</p>
       <router-link :to="{name:'categoria'}" class="cal-hoy-btn" style="display:inline-block; margin-top:10px;">Ver catálogo</router-link>
@@ -14,16 +14,15 @@
       </div>
       <div class="pd-info">
         <h1>{{ producto.name }}</h1>
-        <h4 style="color:var(--azul); font-size:24px; font-weight:800; margin:4px 0 14px;">{{ formatearPrecio(producto.price) }}</h4>
-        <h4>Especificaciones</h4>
-        <div class="spec-table"><div class="c1"></div><div class="c2"></div></div>
-        <button class="wishlist" :class="{active: favorito}" @click="alternarFavorito">
-          <span class="heart">♥</span> {{ favorito ? 'Quitar de deseados' : 'Añadir a deseados' }}
-        </button>
-        <br>
-        <button class="btn-primary" :disabled="producto.agotado" @click="agregar">
-          {{ producto.agotado ? 'Agotado' : 'Añadir al carrito' }}
-        </button>
+        <p class="pd-precio">{{ formatearPrecio(producto.price) }}</p>
+        <div class="pd-acciones">
+          <button class="btn-primary" :disabled="producto.agotado" @click="agregar">
+            {{ producto.agotado ? 'Agotado' : 'Añadir al carrito' }}
+          </button>
+          <button class="wishlist" :class="{active: favorito}" type="button" :aria-pressed="favorito" @click="alternarFavorito">
+            <span class="heart" aria-hidden="true">❤️</span> {{ favorito ? 'Quitar de deseados' : 'Añadir a deseados' }}
+          </button>
+        </div>
       </div>
     </div>
     <div class="pd-desc">
@@ -75,19 +74,17 @@ export default {
       const otros = this.productos.lista.filter(p => p.id !== String(this.id) && !p.agotado);
       if (!this.producto) return otros.slice(0, 3);
 
-      // Primero los de la misma categoría (si el producto tiene una);
-      // si no alcanzan para completar 3, rellenamos con el resto del
-      // catálogo para que la sección no se vea escasa.
+      // Solo mostramos productos disponibles de la misma categoría.
       const categoriaIds = this.producto.categoriaIds?.length ? this.producto.categoriaIds : [this.producto.categoriaId].filter(Boolean);
       const mismaCategoria = categoriaIds.length
         ? otros.filter(p => (p.categoriaIds?.length ? p.categoriaIds : [p.categoriaId]).some(id => categoriaIds.includes(id)))
         : [];
 
-      if (mismaCategoria.length >= 3) return mismaCategoria.slice(0, 3);
+      if (mismaCategoria.length) return mismaCategoria.slice(0, 3);
 
-      const idsYaElegidos = new Set(mismaCategoria.map(p => p.id));
-      const relleno = otros.filter(p => !idsYaElegidos.has(p.id));
-      return [...mismaCategoria, ...relleno].slice(0, 3);
+      // Si no hay relacionados de la categoría, mostramos alternativas
+      // disponibles para que la sección no quede vacía.
+      return otros.slice(0, 3);
     }
   },
   methods: {
@@ -97,7 +94,7 @@ export default {
     },
     agregar() {
       if (this.producto?.agotado) return;
-      this.carrito.agregar(this.id);
+      if (!this.carrito.agregar(this.id)) return;
       this.mostrarAviso = true;
       setTimeout(() => { this.mostrarAviso = false; }, 1800);
     }

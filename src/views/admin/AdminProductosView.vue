@@ -9,17 +9,19 @@
             <div class="icons">
               <button
                 type="button"
+                class="admin-btn admin-btn-borrar"
                 :disabled="!seleccionados.length"
                 :title="seleccionados.length ? 'Eliminar seleccionados' : 'Seleccioná al menos un producto'"
                 @click="eliminarSeleccionados"
-              >🗑</button>
+              ><span aria-hidden="true">🗑</span> Borrar</button>
               <button
                 type="button"
+                class="admin-btn admin-btn-archivar"
                 :disabled="!seleccionados.length"
                 :title="seleccionados.length ? 'Archivar seleccionados' : 'Seleccioná al menos un producto'"
                 @click="archivarSeleccionados"
-              >🗄</button>
-              <button type="button" title="Agregar producto" @click="abrirParaCrear">＋</button>
+              ><span aria-hidden="true">🗄</span> Archivar</button>
+              <button type="button" class="admin-btn admin-btn-agregar" title="Agregar producto" @click="abrirParaCrear"><span aria-hidden="true">+</span> Añadir</button>
             </div>
             <div class="select-all">
               <label>
@@ -27,31 +29,42 @@
                 Seleccionar todos
               </label>
               <span v-if="seleccionados.length" class="select-count">({{ seleccionados.length }} seleccionados)</span>
-              <router-link :to="{name:'admin-productos-archivados'}" class="cal-hoy-btn" style="margin-left:14px;">Ver archivados</router-link>
+              <input v-model.trim="busqueda" class="admin-search-input" type="search" placeholder="Buscar producto..." aria-label="Buscar producto">
+              <select v-model="filtroCategoria" class="admin-filter-select" aria-label="Filtrar productos por categoría">
+                <option value="">Todas las categorías</option>
+                <option v-for="categoria in categorias" :key="categoria.id" :value="categoria.id">{{ categoria.nombre }}</option>
+                <option value="sin">Sin categoría</option>
+              </select>
+              <router-link :to="{name:'admin-productos-archivados'}" class="admin-btn admin-btn-neutro" style="margin-left:14px;"><span aria-hidden="true">🗄</span> Ver archivados</router-link>
             </div>
           </div>
 
-          <div class="admin-header-row">
-            <div class="administrar-h">Producto</div>
-            <div class="col">Valor total (UYU)</div><div class="col">Categoría</div><div class="col">Stock</div><div class="col">ID</div>
-            <div class="thumb-spacer"></div><div class="chk-spacer"></div>
-          </div>
-
-          <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando productos…</p>
-
-          <div class="admin-row" v-for="producto in productos" :key="producto.id">
-            <a class="administrar" @click="abrirParaEditar(producto)">Administrar</a>
-            <div class="col">{{ producto.nombre }}<br>{{ formatearPrecio(producto.precio_venta) }}</div>
-            <div class="col">{{ obtenerCategoriaNombre(producto) }}</div>
-            <div class="col">{{ producto.stock }}</div>
-            <div class="col">{{ producto.id }}</div>
-            <div class="thumb img-placeholder">
-              <img v-if="obtenerUrlImagen(producto)" :src="obtenerUrlImagen(producto)" :alt="producto.nombre" @error="$event.target.style.display='none'">
+          <div class="admin-table-scroll">
+            <div class="admin-header-row">
+              <col-ordenable class="administrar-h" clave="nombre" :orden="orden" @ordenar="ordenarPor">Producto</col-ordenable>
+              <col-ordenable class="col" clave="precio" :orden="orden" @ordenar="ordenarPor">Valor total (UYU)</col-ordenable>
+              <col-ordenable class="col" clave="categoria" :orden="orden" @ordenar="ordenarPor">Categoría</col-ordenable>
+              <col-ordenable class="col" clave="stock" :orden="orden" @ordenar="ordenarPor">Stock</col-ordenable>
+              <col-ordenable class="col" clave="id" :orden="orden" @ordenar="ordenarPor">ID</col-ordenable>
+              <div class="thumb-spacer"></div><div class="chk-spacer"></div>
             </div>
-            <input class="chk" type="checkbox" :value="producto.id" v-model="seleccionados" :aria-label="'Seleccionar ' + producto.nombre">
+
+            <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando productos…</p>
+
+            <div class="admin-row" v-for="producto in productosOrdenados" :key="producto.id">
+              <a class="administrar" @click="abrirParaEditar(producto)">Administrar</a>
+              <div class="col">{{ producto.nombre }}<br>{{ formatearPrecio(producto.precio_venta) }}</div>
+              <div class="col">{{ obtenerCategoriaNombre(producto) }}</div>
+              <div class="col">{{ producto.stock }}</div>
+              <div class="col">{{ producto.id }}</div>
+              <div class="thumb img-placeholder">
+                <img v-if="obtenerUrlImagen(producto)" :src="obtenerUrlImagen(producto)" :alt="producto.nombre" @error="$event.target.style.display='none'">
+              </div>
+              <input class="chk" type="checkbox" :value="producto.id" v-model="seleccionados" :aria-label="'Seleccionar ' + producto.nombre">
+            </div>
           </div>
 
-          <p v-if="!cargando && !productos.length && !error" class="producto-vacio">No hay productos registrados.</p>
+          <p v-if="!cargando && !productosFiltrados.length && !error" class="producto-vacio">No hay productos que coincidan con la búsqueda o el filtro.</p>
           <p v-if="error" class="producto-error" aria-live="polite">{{ error }}</p>
         </div>
       </div>
@@ -104,7 +117,7 @@
                   title="Agregar categoría nueva"
                   aria-label="Agregar categoría nueva"
                   @click="mostrarNuevaCategoria = !mostrarNuevaCategoria"
-                >＋</button>
+                ><span aria-hidden="true">+</span> Añadir</button>
                 <button
                   type="button"
                   class="categoria-borrar-btn"
@@ -112,7 +125,7 @@
                   aria-label="Eliminar categoría seleccionada"
                   :disabled="!formulario.categoria_id"
                   @click="borrarCategoriaSeleccionada"
-                >🗑</button>
+                ><span aria-hidden="true">🗑</span> Borrar</button>
               </div>
 
               <!-- Formulario inline para crear una categoría sin salir del modal -->
@@ -124,7 +137,7 @@
                   @keydown.enter.prevent="crearCategoria"
                 >
                 <button type="button" @click="crearCategoria" :disabled="creandoCategoria">
-                  {{ creandoCategoria ? 'Creando...' : 'Agregar' }}
+                  {{ creandoCategoria ? 'Creando...' : '+ Añadir' }}
                 </button>
                 <button type="button" class="categoria-nueva-cancelar" @click="cancelarNuevaCategoria">Cancelar</button>
               </div>
@@ -172,8 +185,11 @@
 import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
+import { aplicarEnLote } from '../../utils/lote.js';
 import { formatearPrecio } from '../../catalog.js';
 import { obtenerUrlImagen } from '../../stores/productos.js';
+import ColOrdenable from '../../components/ColOrdenable.vue';
+import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
 
 const PRODUCTO_VACIO = {
   nombre: '',
@@ -198,13 +214,36 @@ function obtenerCategoriaIdDe(producto) {
 function obtenerCategoriaNombreDe(producto) {
   return producto.categoria?.nombre || producto.categorias?.[0]?.nombre || null;
 }
+// Todos los ids de categoría de un producto (puede tener más de una),
+// como texto, para poder compararlos con el valor del filtro.
+function obtenerCategoriaIdsDe(producto) {
+  const ids = [];
+  if (producto.categoria_id != null) ids.push(producto.categoria_id);
+  if (producto.categoria?.id != null) ids.push(producto.categoria.id);
+  (producto.categorias || []).forEach(categoria => {
+    if (categoria?.id != null) ids.push(categoria.id);
+  });
+  return ids.map(String);
+}
+
+// Qué valor se compara al ordenar por cada columna de la tabla.
+const VALORES_ORDEN = {
+  nombre: producto => producto.nombre,
+  precio: producto => Number(producto.precio_venta),
+  categoria: producto => obtenerCategoriaNombreDe(producto),
+  stock: producto => Number(producto.stock),
+  id: producto => Number(producto.id)
+};
 
 export default {
   name: 'AdminProductosView',
-  components: { AdminTopbar, AdminSidebar },
+  components: { AdminTopbar, AdminSidebar, ColOrdenable },
   data() {
     return {
       productos: [],
+      busqueda: '',
+      filtroCategoria: '',  // '' = todas, 'sin' = sin categoría, o el id de una categoría
+      orden: { clave: null, direccion: 'asc' },
       categorias: [],
       seleccionados: [],
 
@@ -230,12 +269,36 @@ export default {
     };
   },
   computed: {
+    productosFiltrados() {
+      const texto = this.busqueda.toLowerCase();
+
+      return this.productos.filter(producto => {
+        const coincideTexto = !texto || [
+          producto.nombre,
+          producto.id,
+          producto.codigo_barras,
+          obtenerCategoriaNombreDe(producto)
+        ].join(' ').toLowerCase().includes(texto);
+
+        const idsCategoria = obtenerCategoriaIdsDe(producto);
+        const coincideCategoria = this.filtroCategoria === ''
+          || (this.filtroCategoria === 'sin' ? idsCategoria.length === 0 : idsCategoria.includes(String(this.filtroCategoria)));
+
+        return coincideTexto && coincideCategoria;
+      });
+    },
+    productosOrdenados() {
+      return ordenarLista(this.productosFiltrados, this.orden, VALORES_ORDEN);
+    },
     todosSeleccionados: {
       get() {
-        return this.productos.length > 0 && this.seleccionados.length === this.productos.length;
+        return this.productosFiltrados.length > 0 && this.productosFiltrados.every(producto => this.seleccionados.includes(producto.id));
       },
       set(marcar) {
-        this.seleccionados = marcar ? this.productos.map(p => p.id) : [];
+        const idsVisibles = this.productosFiltrados.map(producto => producto.id);
+        this.seleccionados = marcar
+          ? [...new Set([...this.seleccionados, ...idsVisibles])]
+          : this.seleccionados.filter(id => !idsVisibles.includes(id));
       }
     }
   },
@@ -247,6 +310,9 @@ export default {
   methods: {
     formatearPrecio,
     obtenerUrlImagen,
+    ordenarPor(clave) {
+      this.orden = alternarOrden(this.orden, clave);
+    },
     obtenerCategoriaNombre(producto) {
       return obtenerCategoriaNombreDe(producto) || 'Sin categoría';
     },
@@ -267,6 +333,11 @@ export default {
       try {
         const response = await api.get('/categorias');
         this.categorias = response.data;
+        // si la categoría filtrada se borró, volvemos a mostrar todas
+        if (this.filtroCategoria !== '' && this.filtroCategoria !== 'sin'
+            && !this.categorias.some(c => String(c.id) === String(this.filtroCategoria))) {
+          this.filtroCategoria = '';
+        }
       } catch (requestError) {
         console.error('Error al cargar categorías:', requestError);
         this.error = 'No se pudieron cargar las categorías.';
@@ -479,30 +550,24 @@ export default {
       if (!confirmado) return;
 
       this.error = '';
-      try {
-        await Promise.all(this.seleccionados.map(id => api.delete(`/productos/${id}`)));
-        this.seleccionados = [];
-        await this.cargarProductos();
-      } catch (requestError) {
-        console.error('Error al eliminar:', requestError);
-        this.error = 'No se pudieron eliminar algunos productos.';
-      }
+      const fallidos = await aplicarEnLote(this.seleccionados, id => api.delete(`/productos/${id}`));
+      // los que fallaron quedan seleccionados, para poder reintentar
+      this.seleccionados = fallidos;
+      await this.cargarProductos();
+      if (fallidos.length) this.error = 'No se pudieron eliminar algunos productos.';
     },
     async archivarSeleccionados() {
       if (!this.seleccionados.length) return;
 
       this.error = '';
-      try {
-        // Un producto archivado deja de aparecer en la tienda y en este
-        // listado, pero sigue existiendo (se puede restaurar desde
-        // "Productos archivados"). Por eso no se borra, solo se marca.
-        await Promise.all(this.seleccionados.map(id => api.put(`/productos/${id}`, { archivado: true })));
-        this.seleccionados = [];
-        await this.cargarProductos();
-      } catch (requestError) {
-        console.error('Error al archivar:', requestError);
-        this.error = 'No se pudieron archivar algunos productos.';
-      }
+      // Un producto archivado deja de aparecer en la tienda y en este
+      // listado, pero sigue existiendo (se puede restaurar desde
+      // "Productos archivados"). Por eso no se borra, solo se marca.
+      const fallidos = await aplicarEnLote(this.seleccionados, id => api.put(`/productos/${id}`, { archivado: true }));
+      // los que fallaron quedan seleccionados, para poder reintentar
+      this.seleccionados = fallidos;
+      await this.cargarProductos();
+      if (fallidos.length) this.error = 'No se pudieron archivar algunos productos.';
     }
   }
 };

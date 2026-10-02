@@ -31,20 +31,36 @@
     </div>
   </div>
   <div class="navbar">
-    <div class="categorias-wrap" :class="{open: categoriasAbiertas}">
-      <button class="categorias-btn" @click="categoriasAbiertas = !categoriasAbiertas"><span class="bars">≡</span> CATEGORÍAS ▾</button>
+    <div class="categorias-wrap" :class="{open: categoriasAbiertas}" ref="categoriasWrap">
+      <button
+        class="categorias-btn"
+        type="button"
+        aria-haspopup="true"
+        :aria-expanded="categoriasAbiertas"
+        @click="categoriasAbiertas = !categoriasAbiertas"
+      >
+        <svg class="categorias-btn-icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+        <span>Categorías</span>
+        <svg class="categorias-btn-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
       <div class="mega-menu">
         <div class="mega-menu-list">
-          <div
+          <p class="mega-menu-titulo">Explorá por categoría</p>
+          <button
+            type="button"
             class="mega-menu-item"
             :class="{active: categoriaActiva===null}"
             @mouseenter="categoriaActiva = null"
             @click="irACategoria(null)"
           >
-            <span class="mm-icon">▦</span>
+            <span class="mm-icon mm-icon-todas" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg>
+            </span>
             <span class="mm-label">Todas las categorías</span>
-          </div>
-          <div
+            <span class="mm-chevron" aria-hidden="true">›</span>
+          </button>
+          <button
+            type="button"
             class="mega-menu-item"
             v-for="cat in categoriasMenu"
             :key="cat.id"
@@ -52,10 +68,10 @@
             @mouseenter="categoriaActiva = cat.id"
             @click="irACategoria(cat.id)"
           >
-            <span class="mm-icon">{{ cat.icono }}</span>
+            <span class="mm-icon" aria-hidden="true">{{ cat.nombre.charAt(0).toUpperCase() }}</span>
             <span class="mm-label">{{ cat.nombre }}</span>
-            <span class="mm-chevron" v-if="cat.subcategorias.length">›</span>
-          </div>
+            <span class="mm-chevron" aria-hidden="true">›</span>
+          </button>
         </div>
         <div class="mega-menu-panel" v-if="categoriaActivaData && categoriaActivaData.subcategorias.length">
           <div class="mega-menu-panel-cols">
@@ -82,6 +98,15 @@ import { useCarritoStore } from '../stores/carrito.js';
 import { useProductosStore } from '../stores/productos.js';
 import api from '../Api/api.js';
 import { esSesionDemo, obtenerUsuarioDemo } from '../Api/demoAuth.js';
+import { haySesion, obtenerUsuarioGuardado } from '../Api/cuenta.js';
+
+// El usuario que ya quedó guardado en el navegador al iniciar sesión.
+// Arrancamos con este para que, al cambiar de pantalla, el header no
+// muestre "Iniciar sesión" por un instante mientras responde /user.
+function usuarioInicial() {
+  if (esSesionDemo()) return obtenerUsuarioDemo();
+  return haySesion() ? obtenerUsuarioGuardado() : null;
+}
 
 export default {
   name: 'StoreHeader',
@@ -93,7 +118,7 @@ export default {
       busqueda: '',
       busquedaAbierta: false,
       categoriasAbiertas: false,
-      usuario: null,
+      usuario: usuarioInicial(),
       categoriaActiva: null,
       categoriasMenu: []
     };
@@ -115,20 +140,16 @@ export default {
         .slice(0, 8);
     }
   },
-  async mounted() {
+  mounted() {
     this.productos.cargar();
-    await this.cargarCategorias();
-
-    if (esSesionDemo()) {
-      this.usuario = obtenerUsuarioDemo();
-      return;
-    }
-    try {
-      const response = await api.get('/user');
-      this.usuario = response.data;
-    } catch (error) {
-      this.usuario = null;
-    }
+    this.cargarCategorias();
+    this.actualizarUsuario();
+    document.addEventListener('click', this.alClickAfuera);
+    document.addEventListener('keydown', this.alApretarTecla);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.alClickAfuera);
+    document.removeEventListener('keydown', this.alApretarTecla);
   },
   methods: {
     formatearPrecio,
@@ -152,6 +173,27 @@ export default {
         this.categoriasMenu = [];
         this.categoriaActiva = null;
       }
+    },
+    // Confirma la sesión con el backend en segundo plano. Solo se borra el
+    // usuario si el servidor dice que la sesión ya no vale (401); si es un
+    // problema de red, se sigue mostrando el que estaba guardado.
+    async actualizarUsuario() {
+      if (esSesionDemo() || !haySesion()) return;
+      try {
+        const response = await api.get('/user');
+        this.usuario = response.data;
+      } catch (error) {
+        if (error.response?.status === 401) this.usuario = null;
+      }
+    },
+    // El menú de categorías se cierra al hacer click fuera de él o con Escape.
+    alClickAfuera(evento) {
+      if (this.categoriasAbiertas && !this.$refs.categoriasWrap?.contains(evento.target)) {
+        this.categoriasAbiertas = false;
+      }
+    },
+    alApretarTecla(evento) {
+      if (evento.key === 'Escape') this.categoriasAbiertas = false;
     },
     alPerderFoco() {
       setTimeout(() => { this.busquedaAbierta = false; }, 150);

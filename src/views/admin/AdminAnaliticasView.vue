@@ -71,7 +71,9 @@
             <h4>Productos más vendidos</h4>
             <table class="mini-table">
               <thead>
-                <tr><th>Producto</th><th>Unidades</th><th>Ventas</th></tr>
+                <tr>
+                  <th v-for="columna in columnasMasVendidos" :key="columna.clave" class="th-ordenable" :class="{activa: ordenMasVendidos.clave === columna.clave}" :aria-sort="ordenMasVendidos.clave === columna.clave ? (ordenMasVendidos.direccion === 'asc' ? 'ascending' : 'descending') : 'none'" tabindex="0" @click="ordenarMasVendidos(columna.clave)" @keydown.enter.prevent="ordenarMasVendidos(columna.clave)">{{ columna.etiqueta }}<span class="orden-indicador" aria-hidden="true">{{ ordenMasVendidos.clave === columna.clave ? (ordenMasVendidos.direccion === 'asc' ? '▲' : '▼') : '↕' }}</span></th>
+                </tr>
               </thead>
               <tbody>
                 <tr v-for="producto in productosMasVendidos" :key="producto.nombre"><td>{{producto.nombre}}</td><td>{{producto.unidades}}</td><td>{{formatearPrecio(producto.ventas)}}</td></tr>
@@ -111,6 +113,7 @@ import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
 import ApexCharts from 'apexcharts';
+import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
 
 // vue-chartjs dibuja el gráfico combinado de ventas y órdenes.
 import { Bar } from 'vue-chartjs';
@@ -146,6 +149,12 @@ export default {
   components: { AdminTopbar, AdminSidebar, BarChart: Bar }, 
   data() {
     return {
+      ordenMasVendidos: { clave: null, direccion: 'asc' },
+      columnasMasVendidos: [
+        { clave: 'nombre', etiqueta: 'Producto' },
+        { clave: 'unidades', etiqueta: 'Unidades' },
+        { clave: 'ventas', etiqueta: 'Ventas' }
+      ],
       cargando: false,
       error: '',
       resumen: { ventas_totales: 0, ordenes: 0, clientes_nuevos: 0, ticket_promedio: 0, productos_disponibles: 0, stock_total: 0, productos_agotados: 0 },
@@ -207,7 +216,11 @@ export default {
   },
   computed: {
     productosMasVendidos() {
-      return this.productos;
+      return ordenarLista(this.productos, this.ordenMasVendidos, {
+        nombre: producto => producto.nombre,
+        unidades: producto => Number(producto.unidades),
+        ventas: producto => Number(producto.ventas)
+      });
     }
   },
   async mounted() {
@@ -217,6 +230,9 @@ export default {
     this.categoriasChart?.destroy();
   },
   methods: {
+    ordenarMasVendidos(clave) {
+      this.ordenMasVendidos = alternarOrden(this.ordenMasVendidos, clave);
+    },
     formatearPrecio(valor) {
       return new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 }).format(Number(valor) || 0);
     },
@@ -277,6 +293,10 @@ export default {
               size: '68%',
               labels: {
                 show: true,
+                value: {
+                  show: true,
+                  formatter: valor => this.formatearPrecio(valor)
+                },
                 total: {
                   show: true,
                   label: 'Total ventas',

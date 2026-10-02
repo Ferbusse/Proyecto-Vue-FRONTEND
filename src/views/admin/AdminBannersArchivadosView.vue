@@ -9,20 +9,21 @@
           <p>Banners que ya no aparecen en el carrusel de inicio ni en el listado normal. Podés restaurarlos o borrarlos definitivamente.</p>
         </div>
 
-        <router-link :to="{name:'admin-banners'}" class="cal-hoy-btn" style="display:inline-block; margin-bottom:16px;">← Volver a Banner de inicio</router-link>
+        <router-link :to="{name:'admin-banners'}" class="admin-btn admin-btn-neutro" style="margin-bottom:16px;">← Volver a Banner de inicio</router-link>
 
         <div class="admin-table-wrap">
           <div class="admin-header-row">
-            <div class="administrar-h">Banner</div>
-            <div class="col">Orden</div><div class="col">ID</div>
+            <col-ordenable class="administrar-h" clave="banner" :orden="orden" @ordenar="ordenarPor">Banner</col-ordenable>
+            <col-ordenable class="col" clave="orden" :orden="orden" @ordenar="ordenarPor">Orden</col-ordenable>
+            <col-ordenable class="col" clave="id" :orden="orden" @ordenar="ordenarPor">ID</col-ordenable>
             <div class="thumb-spacer"></div>
           </div>
 
           <p v-if="cargando" class="producto-vacio" aria-live="polite">Cargando…</p>
 
-          <div class="admin-row" v-for="banner in banners" :key="banner.id">
-            <a class="administrar" @click="restaurar(banner)">Restaurar</a>
-            <div class="col" v-if="banner.titulo" v-html="banner.titulo"></div>
+          <div class="admin-row" v-for="banner in bannersOrdenados" :key="banner.id">
+            <div class="administrar"><button type="button" class="admin-btn admin-btn-restaurar" @click="restaurar(banner)"><span aria-hidden="true">↺</span> Restaurar</button></div>
+            <div class="col" v-if="tituloLimpio(banner)" v-html="tituloLimpio(banner)"></div>
             <div class="col texto-atenuado" v-else>Banner #{{ banner.id }}</div>
             <div class="col">{{ banner.orden }}</div>
             <div class="col">{{ banner.id }}</div>
@@ -45,6 +46,9 @@ import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
 import { obtenerUrlImagenBanner } from './AdminBannersView.vue';
+import ColOrdenable from '../../components/ColOrdenable.vue';
+import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
+import { limpiarTexto } from '../../utils/textoBanner.js';
 
 const COLORES = {
   1: 'linear-gradient(135deg,#14208c 0%,#0f1a70 100%)',
@@ -54,21 +58,40 @@ const COLORES = {
 };
 const EMOJIS = { tag: '🏷️', headphones: '🎧', bolt: '⚡', truck: '🚚' };
 
+// Qué valor se compara al ordenar por cada columna de la tabla.
+const VALORES_ORDEN = {
+  banner: banner => limpiarTexto(banner.titulo).replace(/<[^>]*>/g, '') || 'Banner #' + banner.id,
+  orden: banner => Number(banner.orden),
+  id: banner => Number(banner.id)
+};
+
 export default {
   name: 'AdminBannersArchivadosView',
-  components: { AdminTopbar, AdminSidebar },
+  components: { AdminTopbar, AdminSidebar, ColOrdenable },
   data() {
     return {
       banners: [],
+      orden: { clave: null, direccion: 'asc' },
       cargando: false,
       error: ''
     };
+  },
+  computed: {
+    bannersOrdenados() {
+      return ordenarLista(this.banners, this.orden, VALORES_ORDEN);
+    }
   },
   async mounted() {
     await this.cargarArchivados();
   },
   methods: {
     obtenerUrlImagenBanner,
+    tituloLimpio(banner) {
+      return limpiarTexto(banner.titulo);
+    },
+    ordenarPor(clave) {
+      this.orden = alternarOrden(this.orden, clave);
+    },
     colorDeMuestra(color) {
       return COLORES[color] || COLORES[1];
     },

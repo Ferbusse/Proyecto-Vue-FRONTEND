@@ -1,5 +1,6 @@
 <template>
   <cuenta-shell activo="escritorio" titulo-seccion="Mi cuenta">
+    <p v-if="nombre" class="cuenta-saludo">Hola, <strong>{{ nombre }}</strong>. Desde acá podés ver tus pedidos, administrar tus direcciones y editar los datos de tu cuenta.</p>
     <div class="cuenta-grid" role="list">
       <router-link :to="{name:'cuenta-pedidos'}" class="cuenta-card" role="listitem">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>
@@ -28,10 +29,16 @@
 <script>
 import CuentaShell from '../components/CuentaShell.vue';
 import { cerrarSesion } from '../Api/sesion.js';
+import { obtenerUsuarioGuardado } from '../Api/cuenta.js';
 
 export default {
   name: 'PerfilView',
   components: { CuentaShell },
+  computed: {
+    nombre() {
+      return obtenerUsuarioGuardado()?.name || '';
+    }
+  },
   methods: {
     salir() {
       cerrarSesion(this.$router);

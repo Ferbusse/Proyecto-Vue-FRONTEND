@@ -30,7 +30,8 @@ export const useCarritoStore = defineStore('carrito', {
     modalPago: false,
     modalTarjeta: false,
     metodoPagoSeleccionado: null,
-    mostrarAvisoGlobal: false      // aviso de "pago realizado con éxito"
+    mostrarAvisoGlobal: false,     // aviso de "pago realizado con éxito"
+    datosEnvio: null               // datos que el cliente completó en el checkout
   }),
 
   getters: {
@@ -50,7 +51,12 @@ export const useCarritoStore = defineStore('carrito', {
         .filter(linea => !!linea.product);
     },
     cantidad(state) {
-      return Object.values(state.items).reduce((suma, qty) => suma + qty, 0);
+      // Mientras los productos no cargaron no sabemos cuáles siguen
+      // existiendo, así que contamos todo lo guardado.
+      if (!useProductosStore().lista.length) {
+        return Object.values(state.items).reduce((suma, qty) => suma + qty, 0);
+      }
+      return this.lineas.reduce((suma, linea) => suma + linea.qty, 0);
     },
     total(state) {
       const productos = useProductosStore();
@@ -68,17 +74,19 @@ export const useCarritoStore = defineStore('carrito', {
     persistir() {
       localStorage.setItem('carrito_items', JSON.stringify(this.items));
     },
+    // Devuelve true si lo agregó, false si no pudo (no existe o no hay más stock).
     agregar(id) {
       const producto = useProductosStore().obtenerProducto(id);
-      if (!producto) return;
+      if (!producto) return false;
 
       const stock = Number(producto.stock);
       const cantidadActual = this.items[id] || 0;
 
-      if (Number.isFinite(stock) && (stock <= 0 || cantidadActual >= stock)) return;
+      if (Number.isFinite(stock) && (stock <= 0 || cantidadActual >= stock)) return false;
 
       this.items[id] = cantidadActual + 1;
       this.persistir();
+      return true;
     },
     cambiarCantidad(id, delta) {
       if (!this.items[id]) return;
@@ -103,6 +111,28 @@ export const useCarritoStore = defineStore('carrito', {
     },
     abrir() { this.abierto = true; },
     cerrar() { this.abierto = false; },
+
+    // Foto del pedido tal como está justo ahora (productos, total, datos
+    // de envío y método de pago). Hay que llamarla ANTES de que el pago
+    // vacíe el carrito, para poder registrar el pedido en la cuenta.
+    armarPedido() {
+      const envio = this.datosEnvio || {};
+      return {
+        items: this.lineas.map(linea => ({
+          producto_id: linea.product.id,
+          nombre: linea.product.name,
+          cantidad: linea.qty,
+          precio: linea.product.price
+        })),
+        total: this.total,
+        metodo_pago: this.metodoPagoSeleccionado,
+        nombre: `${envio.nombre || ''} ${envio.apellido || ''}`.trim(),
+        documento: envio.documento || '',
+        telefono: envio.telefono || '',
+        email: envio.email || '',
+        direccion: envio.direccion || ''
+      };
+    },
 
     // -- flujo de pago --
     // Devuelve true si el componente que llamó debe navegar a /checkout.
