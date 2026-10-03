@@ -26,7 +26,8 @@
 
           <div class="admin-table-scroll">
             <div class="admin-header-row">
-              <col-ordenable class="administrar-h" clave="id" :orden="orden" @ordenar="ordenarPor">Orden</col-ordenable>
+              <div class="administrar-h" aria-hidden="true"></div>
+              <col-ordenable class="col" clave="id" :orden="orden" @ordenar="ordenarPor">Orden</col-ordenable>
               <col-ordenable class="col" clave="cliente" :orden="orden" @ordenar="ordenarPor">Cliente</col-ordenable>
               <col-ordenable class="col" clave="fecha" :orden="orden" @ordenar="ordenarPor">Fecha</col-ordenable>
               <col-ordenable class="col" clave="total" :orden="orden" @ordenar="ordenarPor">Total (UYU)</col-ordenable>
@@ -37,6 +38,7 @@
 
             <div class="admin-row" v-for="envio in enviosOrdenados" :key="envio.id">
               <a class="administrar" @click="marcarEntregado(envio)">Marcar entregado</a>
+              <div class="col">#{{ envio.id }}</div>
               <div class="col">{{ envio.cliente }}</div>
               <div class="col">{{ envio.fecha }}</div>
               <div class="col">{{ formatearPrecio(envio.total) }}</div>

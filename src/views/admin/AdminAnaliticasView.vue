@@ -62,7 +62,10 @@
           </div>
           <div class="panel">
             <h4>Ventas por categoría</h4>
-            <div ref="categoriasChart" class="categorias-chart"></div>
+            <p v-if="cargando" class="producto-vacio">Cargando analíticas…</p>
+            <p v-else-if="!error && !categorias.length" class="producto-vacio">No hay ventas por categoría para graficar.</p>
+            <!-- v-show y no v-if: ApexCharts necesita que el div exista para dibujar -->
+            <div v-show="categorias.length" ref="categoriasChart" class="categorias-chart"></div>
           </div>
         </div>
 
@@ -247,7 +250,8 @@ export default {
         this.datosDiarios = datos.grafico || [];
         this.categorias = datos.categorias || [];
         this.productos = datos.productos || [];
-        this.renderizarGraficoCategorias();
+        // después de que Vue muestre el div del gráfico, si no ApexCharts lo mide con ancho 0
+        this.$nextTick(() => this.renderizarGraficoCategorias());
         // Convertimos la respuesta en las etiquetas y series que espera Chart.js.
         this.datosGrafico = {
           ...this.datosGrafico,
@@ -309,7 +313,6 @@ export default {
         stroke: { width: 5, colors: ['#fff'] },
         dataLabels: { enabled: false },
         legend: { position: 'bottom' },
-        title: { text: 'Ventas por categoría', align: 'left' },
         responsive: [{
           breakpoint: 480,
           options: { chart: { width: 320 } }

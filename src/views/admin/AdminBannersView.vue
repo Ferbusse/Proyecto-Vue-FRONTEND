@@ -46,7 +46,8 @@
           </div>
 
           <div class="admin-header-row">
-            <col-ordenable class="administrar-h" clave="banner" :orden="ordenTabla" @ordenar="ordenarPor">Banner</col-ordenable>
+            <div class="administrar-h" aria-hidden="true"></div>
+            <col-ordenable class="col" clave="banner" :orden="ordenTabla" @ordenar="ordenarPor">Banner</col-ordenable>
             <col-ordenable class="col" clave="estado" :orden="ordenTabla" @ordenar="ordenarPor">Estado</col-ordenable>
             <col-ordenable class="col" clave="orden" :orden="ordenTabla" @ordenar="ordenarPor">Orden</col-ordenable>
             <div class="thumb-spacer"></div><div class="chk-spacer"></div>

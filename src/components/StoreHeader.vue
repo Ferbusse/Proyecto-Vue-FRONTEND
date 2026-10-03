@@ -3,14 +3,17 @@
     <router-link class="logo" :to="{name:'inicio'}"><img class="logo-img" :src="logoUrl" alt="Zona Móvil" @error="$event.target.style.display='none'"></router-link>
     <div class="search-box" :class="{'show-results': busquedaAbierta}" @focusin="busquedaAbierta=true" @focusout="alPerderFoco">
       <div class="search-row">
-        <input class="search-input" type="text" placeholder="¿Que estas buscando hoy?" v-model="busqueda" @keyup.enter="buscar">
-        <button class="search-btn" @click="buscar">🔍</button>
+        <input class="search-input" type="search" placeholder="¿Qué estás buscando hoy?" aria-label="Buscar productos" v-model="busqueda" @keyup.enter="buscar">
+        <button class="search-btn" type="button" aria-label="Buscar" @click="buscar">🔍</button>
       </div>
       <div class="search-results">
-        <div class="search-result-item" v-for="producto in resultadosBusqueda" :key="producto.id" @click="$router.push({name:'producto', params:{id: producto.id}})">
+        <div class="search-result-item" v-for="producto in resultadosBusqueda" :key="producto.id" @click="irAProducto(producto)">
           <span class="name">{{ producto.name }}</span><span class="price">{{ formatearPrecio(producto.price) }}</span><div class="thumb img-placeholder"><img v-if="producto.imagenUrl" :src="producto.imagenUrl" :alt="producto.name" @error="$event.target.style.display='none'"><span v-else-if="producto.icono" class="product-icono product-icono-chico" aria-hidden="true">{{ producto.icono }}</span></div>
         </div>
-        <div v-if="busqueda.trim() && !resultadosBusqueda.length" class="search-result-item search-sin-resultados">
+        <div v-if="coincidencias.length > resultadosBusqueda.length" class="search-result-item search-ver-todos" @click="verTodos">
+          Ver los {{ coincidencias.length }} resultados
+        </div>
+        <div v-if="busqueda.trim() && !coincidencias.length" class="search-result-item search-sin-resultados">
           Sin resultados para "{{ busqueda.trim() }}"
         </div>
       </div>
@@ -94,6 +97,7 @@
 <script>
 import logo from '../assets/logo.png';
 import { formatearPrecio } from '../catalog.js';
+import { buscarProductos } from '../utils/busqueda.js';
 import { useCarritoStore } from '../stores/carrito.js';
 import { useProductosStore } from '../stores/productos.js';
 import api from '../Api/api.js';
@@ -127,17 +131,13 @@ export default {
     categoriaActivaData() {
       return this.categoriasMenu.find(c => c.id === this.categoriaActiva);
     },
+    // todos los productos que coinciden, del más al menos relevante
+    coincidencias() {
+      return buscarProductos(this.productos.lista, this.busqueda);
+    },
+    // los que entran en el desplegable
     resultadosBusqueda() {
-      const termino = this.busqueda.trim().toLowerCase();
-      if (!termino) return [];
-      return this.productos.lista
-        .filter(producto => {
-          const nombre = (producto.name || '').toLowerCase();
-          const descripcion = (producto.descripcion || '').toLowerCase();
-          const categoria = (producto.categoriaNombre || '').toLowerCase();
-          return nombre.includes(termino) || descripcion.includes(termino) || categoria.includes(termino);
-        })
-        .slice(0, 8);
+      return this.coincidencias.slice(0, 6);
     }
   },
   mounted() {
@@ -198,15 +198,23 @@ export default {
     alPerderFoco() {
       setTimeout(() => { this.busquedaAbierta = false; }, 150);
     },
+    // Enter / lupa: con un solo resultado va directo a ese producto; con
+    // varios, al catálogo mostrando todos.
     buscar() {
       if (!this.busqueda.trim()) return;
-      this.busquedaAbierta = true;
-      // Si el texto matchea un solo producto, vamos directo a su ficha.
-      if (this.resultadosBusqueda.length === 1) {
-        this.$router.push({ name: 'producto', params: { id: this.resultadosBusqueda[0].id } });
-        this.busqueda = '';
-        this.busquedaAbierta = false;
-      }
+      if (this.coincidencias.length === 1) this.irAProducto(this.coincidencias[0]);
+      else if (this.coincidencias.length) this.verTodos();
+      else this.busquedaAbierta = true;
+    },
+    irAProducto(producto) {
+      this.busqueda = '';
+      this.busquedaAbierta = false;
+      this.$router.push({ name: 'producto', params: { id: producto.id } });
+    },
+    verTodos() {
+      const texto = this.busqueda.trim();
+      this.busquedaAbierta = false;
+      this.$router.push({ name: 'categoria', query: { buscar: texto } });
     },
     irACategoria(categoriaId = null) {
       // Si se hace click en una categoría del menú, llevamos al usuario a la

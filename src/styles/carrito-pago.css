@@ -16,7 +16,7 @@
   .pago-paso.completo .pago-paso-texto{color:var(--pago-tinta);}
 
   /* ===== FINALIZAR COMPRA ===== */
-  .pago-page{max-width:1100px; margin:0 auto; padding:40px 32px 0;}
+  .pago-page{width:100%; max-width:1100px; margin:0 auto; padding:40px 32px 0;}
   .checkout-layout{display:flex; gap:40px; flex-wrap:wrap;}
   .checkout-form{flex:1; min-width:280px;}
   /* Superficie "papel" compartida por la tarjeta de datos y el recibo,

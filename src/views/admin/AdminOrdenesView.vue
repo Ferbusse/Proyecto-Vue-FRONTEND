@@ -43,7 +43,8 @@
 
           <div class="admin-table-scroll">
             <div class="admin-header-row">
-              <col-ordenable class="administrar-h" clave="id" :orden="orden" @ordenar="ordenarPor">Orden</col-ordenable>
+              <div class="administrar-h" aria-hidden="true"></div>
+              <col-ordenable class="col" clave="id" :orden="orden" @ordenar="ordenarPor">Orden</col-ordenable>
               <col-ordenable class="col" clave="cliente" :orden="orden" @ordenar="ordenarPor">Cliente</col-ordenable>
               <col-ordenable class="col" clave="fecha" :orden="orden" @ordenar="ordenarPor">Fecha</col-ordenable>
               <col-ordenable class="col" clave="total" :orden="orden" @ordenar="ordenarPor">Total (UYU)</col-ordenable>
@@ -55,6 +56,7 @@
 
             <div class="admin-row" v-for="ordenFila in ordenesOrdenadas" :key="ordenFila.id">
               <a class="administrar" @click="abrirDetalle(ordenFila)">Administrar</a>
+              <div class="col">#{{ ordenFila.id }}</div>
               <div class="col">{{ ordenFila.cliente }}</div>
               <div class="col">{{ ordenFila.fecha }}</div>
               <div class="col">{{ formatearPrecio(ordenFila.total) }}</div>

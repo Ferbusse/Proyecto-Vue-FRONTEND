@@ -31,9 +31,14 @@
         </div>
       </div>
       <div class="cat-main">
+        <div v-if="busquedaTexto" class="cat-busqueda">
+          <span>Resultados para "<strong>{{ busquedaTexto }}</strong>"</span>
+          <router-link :to="{name:'categoria'}">Quitar búsqueda ✕</router-link>
+        </div>
         <div class="cat-toolbar">
           <h3>Ordenar por:</h3>
           <select v-model="ordenarPor">
+            <option v-if="busquedaTexto" value="relevancia">Más relevantes</option>
             <option value="menor">Menor Precio</option>
             <option value="mayor">Mayor Precio</option>
             <!-- "Más vendidos" vuelve cuando el backend exponga datos de ventas por producto. -->
@@ -43,7 +48,7 @@
         <div class="cat-grid">
           <cat-card v-for="producto in itemsPagina" :key="producto.id" :product="producto"></cat-card>
         </div>
-        <div v-if="!itemsGrilla.length && !productos.cargando" class="producto-vacio">No hay productos para esta categoría.</div>
+        <div v-if="!itemsGrilla.length && !productos.cargando" class="producto-vacio">{{ busquedaTexto ? `No encontramos productos para "${busquedaTexto}".` : 'No hay productos para esta categoría.' }}</div>
         <div class="pagination" v-if="totalPaginas > 1">
           <button class="arrow-btn" :disabled="paginaActual === 1" @click="irAPagina(paginaActual - 1)">‹</button>
           <button v-for="n in totalPaginas" :key="n" :class="{active: n === paginaActual}" @click="irAPagina(n)">{{n}}</button>
@@ -59,6 +64,7 @@ import StoreHeader from '../components/StoreHeader.vue';
 import CatCard from '../components/CatCard.vue';
 import api from '../Api/api.js';
 import { useProductosStore } from '../stores/productos.js';
+import { buscarProductos } from '../utils/busqueda.js';
 
 // Cantidad máxima de productos que se muestran por página de catálogo.
 const PRODUCTOS_POR_PAGINA = 16;
@@ -76,6 +82,8 @@ export default {
       filtroPrecioMin: null,
       filtroPrecioMax: null,
       ordenarPor: 'menor',
+      // texto buscado desde el encabezado (?buscar=...), '' si no hay búsqueda
+      busquedaTexto: '',
       paginaActual: 1
     };
   },
@@ -90,7 +98,9 @@ export default {
     // Filtra primero por precio y luego, si hay una categoría seleccionada,
     // deja solo los productos que pertenecen a esa categoría.
     itemsGrilla() {
-      let lista = this.productos.lista.filter(
+      // con búsqueda, se parte de los resultados ya ordenados por relevancia
+      const base = this.busquedaTexto ? buscarProductos(this.productos.lista, this.busquedaTexto) : this.productos.lista;
+      let lista = base.filter(
         p => !p.agotado && p.price >= this.filtroPrecioMin && p.price <= this.filtroPrecioMax
       );
 
@@ -120,6 +130,15 @@ export default {
   watch: {
     // Lee la categoría desde la URL para que el filtro se mantenga si se
     // recarga la página o se comparte el link de una categoría concreta.
+    '$route.query.buscar': {
+      immediate: true,
+      handler(nuevoValor) {
+        this.busquedaTexto = String(nuevoValor || '').trim();
+        if (this.busquedaTexto) this.ordenarPor = 'relevancia';
+        else if (this.ordenarPor === 'relevancia') this.ordenarPor = 'menor';
+        this.paginaActual = 1;
+      }
+    },
     '$route.query.categoria': {
       immediate: true,
       handler(nuevoValor) {
@@ -169,7 +188,10 @@ export default {
       // Al hacer click en una categoría, actualizamos el filtro y la URL para
       // que la vista quede sincronizada con la selección del usuario.
       this.categoriaSeleccionada = categoriaId ? String(categoriaId) : null;
-      const query = categoriaId ? { categoria: String(categoriaId) } : {};
+      // si había una búsqueda, se mantiene al elegir la categoría
+      const query = {};
+      if (this.busquedaTexto) query.buscar = this.busquedaTexto;
+      if (categoriaId) query.categoria = String(categoriaId);
       this.$router.push({ name: 'categoria', query }).catch(() => {});
     },
     // El mínimo nunca puede pasar al máximo, y viceversa: si se cruzan,

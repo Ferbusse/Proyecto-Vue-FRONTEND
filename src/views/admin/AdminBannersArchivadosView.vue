@@ -13,7 +13,8 @@
 
         <div class="admin-table-wrap">
           <div class="admin-header-row">
-            <col-ordenable class="administrar-h" clave="banner" :orden="orden" @ordenar="ordenarPor">Banner</col-ordenable>
+            <div class="administrar-h" aria-hidden="true"></div>
+            <col-ordenable class="col" clave="banner" :orden="orden" @ordenar="ordenarPor">Banner</col-ordenable>
             <col-ordenable class="col" clave="orden" :orden="orden" @ordenar="ordenarPor">Orden</col-ordenable>
             <col-ordenable class="col" clave="id" :orden="orden" @ordenar="ordenarPor">ID</col-ordenable>
             <div class="thumb-spacer"></div>

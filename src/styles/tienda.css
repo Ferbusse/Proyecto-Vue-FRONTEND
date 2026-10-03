@@ -18,6 +18,11 @@
   .search-result-item span.name{color:var(--azul); font-weight:600; font-size:14px;}
   .search-result-item span.price{color:#888; font-size:12px; white-space:nowrap;}
   .search-result-item .thumb{width:44px;height:36px;flex-shrink:0;}
+  .search-input{-webkit-appearance:none; appearance:none;}
+  .search-result-item:not(.search-sin-resultados){cursor:pointer;}
+  .search-result-item:not(.search-sin-resultados):hover{background:#f3f5fd;}
+  .search-ver-todos{justify-content:center; color:var(--azul); font-weight:700; font-size:13px;}
+  .search-sin-resultados{color:#777; font-size:13px;}
   .account{display:flex; align-items:center; gap:10px; justify-self:end;}
   .account .user-icon{width:34px; height:34px; border:2px solid var(--azul); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--azul); font-size:20px;}
   .account .links{font-size:13px; line-height:1.4;}
@@ -136,9 +141,10 @@
   .cta-catalogo-icono span{width:34px; height:34px; border-radius:7px; background:rgba(255,255,255,.35);}
   .cta-catalogo-icono span:first-child{background:rgba(255,255,255,.85);}
   .cta-catalogo-icono span.acento{background:var(--pago-dorado);}
-  .product-row{display:grid; grid-template-columns:repeat(3,1fr); gap:32px; padding:28px 0; border-bottom:1px solid var(--linea);}
+  /* minmax(0,1fr) y no 1fr: con 1fr una foto grande ensancha su columna y las tarjetas quedan de distinto tamaño */
+  .product-row{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:32px; padding:28px 0; border-bottom:1px solid var(--linea);}
   .product-row:last-child{border-bottom:none;}
-  .product-card{display:flex; flex-direction:column; align-items:center; text-align:center; background:none; border:none; padding:0;}
+  .product-card{min-width:0; display:flex; flex-direction:column; align-items:center; text-align:center; background:none; border:none; padding:0;}
   .product-img{width:100%; aspect-ratio:1/1; padding:10px; font-size:17px; line-height:1.3;}
   .product-name{margin-top:10px; color:var(--azul); font-weight:700; font-size:14px; line-height:1.2;}
   /* ===== LISTADO DE CATEGORÍA ===== */
@@ -154,9 +160,12 @@
   .filter-box .price-label{text-align:center; color:var(--azul); font-size:13px; margin-top:6px;}
   .cat-main{flex:1; padding:24px 32px; background:var(--fondo-gris);}
   .cat-toolbar{display:flex; align-items:center; gap:10px; margin-bottom:16px;}
+  .cat-busqueda{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px 16px; margin-bottom:14px; color:#333; font-size:15px;}
+  .cat-busqueda a{color:var(--azul); font-size:13px; font-weight:700; text-decoration:none;}
+  .cat-busqueda a:hover{text-decoration:underline;}
   .cat-toolbar h3{margin:0; color:var(--azul); font-weight:700;}
   .cat-toolbar select{border:1px solid #999; padding:6px 10px; border-radius:3px; font-weight:700; font-size:13px;}
-  .cat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:22px;}
+  .cat-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px;}
   .cat-card{background:#fff; border:1px solid var(--azul); padding:6px 6px 12px; text-align:center; display:flex; flex-direction:column;}
   .cat-card .img-placeholder{aspect-ratio:1/1; font-size:14px;}
   .cat-card .name{margin-top:8px; color:var(--azul); font-weight:600; font-size:13px;}
@@ -166,7 +175,9 @@
   .pagination .arrow-btn{border:none; background:none; font-size:20px; color:var(--azul);}
 
   /* ===== DETALLE DE PRODUCTO ===== */
-  .product-detail{max-width:1100px; margin:40px auto; display:flex; gap:60px; padding:0 32px; flex-wrap:wrap;}
+  /* width:100% en los bloques centrados: dentro de .view (flex en columna) margin:auto
+     los encoge al ancho del contenido, y el ancho pasaba a depender de las fotos */
+  .product-detail{width:100%; max-width:1100px; margin:40px auto; display:flex; gap:60px; padding:0 32px; flex-wrap:wrap;}
   .pd-image{flex:1; min-width:280px; aspect-ratio:1/1;}
   .pd-info{flex:1; min-width:280px;}
   .pd-info h1{color:var(--azul); font-size:32px; margin:0;}
@@ -188,7 +199,7 @@
   .wishlist.active .heart{filter:none; opacity:1; transform:scale(1.12);}
   .btn-primary{background:var(--azul); color:#fff; border:none; padding:14px 30px; font-weight:800; font-size:16px; border-radius:3px; box-shadow:0 3px 0 var(--azul-oscuro);}
   .btn-primary:active{transform:translateY(2px); box-shadow:none;}
-  .pd-desc{max-width:1100px; margin:10px auto 0; padding:0 32px;}
+  .pd-desc{width:100%; max-width:1100px; margin:10px auto 0; padding:0 32px;}
   .pd-desc h4{color:#333;}
   .pd-desc p{color:#555; line-height:1.6; max-width:700px;}
   .pd-related h4{color:var(--azul); font-size:17px; margin-top:30px;}

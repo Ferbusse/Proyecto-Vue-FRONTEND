@@ -13,8 +13,9 @@
 
         <div class="admin-table-wrap">
           <div class="admin-header-row">
-            <col-ordenable class="administrar-h" clave="nombre" :orden="orden" @ordenar="ordenarPor">Producto</col-ordenable>
-            <col-ordenable class="col" clave="precio" :orden="orden" @ordenar="ordenarPor">Precio de venta</col-ordenable>
+            <div class="administrar-h" aria-hidden="true"></div>
+            <col-ordenable class="col" clave="nombre" :orden="orden" @ordenar="ordenarPor">Producto</col-ordenable>
+            <col-ordenable class="col" clave="precio" :orden="orden" @ordenar="ordenarPor">Precio (UYU)</col-ordenable>
             <col-ordenable class="col" clave="categoria" :orden="orden" @ordenar="ordenarPor">Categoría</col-ordenable>
             <col-ordenable class="col" clave="stock" :orden="orden" @ordenar="ordenarPor">Stock</col-ordenable>
             <col-ordenable class="col" clave="id" :orden="orden" @ordenar="ordenarPor">ID</col-ordenable>
@@ -24,7 +25,8 @@
 
           <div class="admin-row" v-for="producto in productosOrdenados" :key="producto.id">
             <div class="administrar"><button type="button" class="admin-btn admin-btn-restaurar" @click="restaurar(producto)"><span aria-hidden="true">↺</span> Restaurar</button></div>
-            <div class="col">{{ producto.nombre }}<br>{{ formatearPrecio(producto.precio_venta) }}</div>
+            <div class="col">{{ producto.nombre }}</div>
+            <div class="col">{{ formatearPrecio(producto.precio_venta) }}</div>
             <div class="col">{{ obtenerCategoriaNombre(producto) }}</div>
             <div class="col">{{ producto.stock }}</div>
             <div class="col">{{ producto.id }}</div>

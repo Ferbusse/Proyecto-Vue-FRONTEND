@@ -31,7 +31,8 @@
           </div>
 
           <div class="admin-header-row">
-            <col-ordenable class="administrar-h" clave="nombre" :orden="orden" @ordenar="ordenarPor">Empleado</col-ordenable>
+            <div class="administrar-h" aria-hidden="true"></div>
+            <col-ordenable class="col" clave="nombre" :orden="orden" @ordenar="ordenarPor">Empleado</col-ordenable>
             <col-ordenable class="col" clave="puesto" :orden="orden" @ordenar="ordenarPor">Puesto</col-ordenable>
             <col-ordenable class="col" clave="contacto" :orden="orden" @ordenar="ordenarPor">Contacto</col-ordenable>
             <col-ordenable class="col" clave="estado" :orden="orden" @ordenar="ordenarPor">Estado</col-ordenable>

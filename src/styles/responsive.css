@@ -17,7 +17,7 @@
     .logo-img{height:96px;}
     .navbar{padding:10px 24px;}
     .categorias-wrap{margin-left:0;}
-    .cat-grid{grid-template-columns:repeat(3,1fr);}
+    .cat-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
   }
 
   @media(max-width:1024px){
@@ -112,7 +112,7 @@
 
     /* Productos en 2 columnas: las filas de 3 se "disuelven" (display:contents)
        y el propio recuadro pasa a ser la grilla. */
-    .products-wrap{display:grid; grid-template-columns:repeat(2,1fr); gap:22px 14px; padding:0 14px 22px;}
+    .products-wrap{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px 14px; padding:0 14px 22px;}
     .products-wrap > :not(.product-row){grid-column:1 / -1;}
     .product-row{display:contents;}
     .products-wrap-titulo{font-size:20px; padding:20px 2px 0;}
@@ -126,7 +126,7 @@
     .cta-catalogo-icono span{width:24px; height:24px;}
 
     .cat-main{padding:16px;}
-    .cat-grid{grid-template-columns:repeat(2,1fr); gap:14px;}
+    .cat-grid{grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px;}
     .cat-toolbar{flex-wrap:wrap;}
     .pagination{justify-content:center; flex-wrap:wrap;}
 
