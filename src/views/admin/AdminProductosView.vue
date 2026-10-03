@@ -70,8 +70,7 @@
       </div>
     </div>
 
-    <!-- Modal para crear/editar producto, con la misma línea visual que
-         los modales de pago del carrito. -->
+    <!-- Modal para crear/editar producto -->
     <div class="modal-overlay" :class="{open: mostrarFormulario}">
       <div class="modal-box">
         <button class="modal-close" type="button" @click="cerrarFormulario">✕</button>
@@ -248,7 +247,7 @@ export default {
       seleccionados: [],
 
       cargando: false,     // carga inicial de la tabla
-      error: '',           // error de la tabla (cargar/eliminar/duplicar)
+      error: '',           // error de la tabla (cargar/eliminar/archivar)
 
       mostrarFormulario: false,
       editandoId: null,    // null = creando uno nuevo; si no, id del que se edita
@@ -509,8 +508,7 @@ export default {
       this.errorFormulario = '';
       try {
         // Mandamos todo como multipart/form-data (necesario para poder
-        // adjuntar el archivo de imagen). Los campos de texto van igual
-        // que antes, solo cambia cómo se empaquetan.
+        // adjuntar el archivo de imagen).
         const datos = new FormData();
         Object.entries(this.formulario).forEach(([campo, valor]) => {
           datos.append(campo, valor ?? '');

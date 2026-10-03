@@ -7,20 +7,20 @@
       <form @submit.prevent="continuar">
       <div class="auth-field">
         <label>Correo electrónico:*</label>
-        <input v-model="form.email" type="email" required>
+        <input v-model="form.email" type="email" autocomplete="email" required>
       </div>
       <div class="auth-field">
         <label>Nombre de usuario:*</label>
-        <input v-model="form.name" type="text" required>
+        <input v-model="form.name" type="text" autocomplete="username" required>
       </div>
       <div class="auth-field">
         <label>Contraseña:*</label>
-        <input v-model="form.password" :type="verClave1 ? 'text':'password'" minlength="6" required>
+        <input v-model="form.password" :type="verClave1 ? 'text':'password'" minlength="6" autocomplete="new-password" required>
         <button class="toggle-pass" :class="{activo: verClave1}" type="button" :aria-pressed="verClave1" :aria-label="verClave1 ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="verClave1 ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="verClave1=!verClave1">👁️</button>
       </div>
       <div class="auth-field">
         <label>Repetir contraseña:*</label>
-        <input v-model="form.password_confirmation" :type="verClave2 ? 'text':'password'" minlength="6" required>
+        <input v-model="form.password_confirmation" :type="verClave2 ? 'text':'password'" minlength="6" autocomplete="new-password" required>
         <button class="toggle-pass" :class="{activo: verClave2}" type="button" :aria-pressed="verClave2" :aria-label="verClave2 ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="verClave2 ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="verClave2=!verClave2">👁️</button>
       </div>
 
@@ -65,10 +65,8 @@ export default {
     }
   },
   methods: {
-    // Antes acá se pedía el código y se registraba todo en la misma
-    // pantalla. Ahora este paso solo valida los datos, dispara el
-    // envío del código por mail, y manda a la persona a la vista
-    // propia donde lo completa.
+    // Valida los datos, pide que se mande el código por mail y pasa
+    // a la pantalla donde se ingresa.
     async continuar() {
       this.error = '';
 

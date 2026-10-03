@@ -26,9 +26,6 @@ export function obtenerUrlImagen(productoBackend) {
   return null;
 }
 
-// El backend conserva el archivo en storage y la base de datos solo guarda
-// su ruta; antes de enviarlo, el formulario lo reduce a JPG para ahorrar
-// espacio y ancho de banda.
 // El backend usa nombres de campo distintos a los que ya usa toda la
 // tienda (nombre/precio_venta en vez de name/price). Los normalizamos
 // acá, una sola vez, así el resto de los componentes no tiene que
@@ -71,12 +68,8 @@ export const useProductosStore = defineStore('productos', {
     usandoCatalogoDemo: false
   }),
   getters: {
-    // Importante: si no lo encuentra, devuelve undefined (NO el primer
-    // producto de la lista). Antes caía en state.lista[0] como "default",
-    // lo que hacía que un id viejo/borrado (un link compartido, o un
-    // producto fantasma que quedó en el carrito guardado) mostrara en
-    // silencio un producto completamente distinto en vez de avisar que
-    // no existe.
+    // Si no lo encuentra devuelve undefined (nunca otro producto en su lugar),
+    // así un id viejo o borrado se muestra como "no encontrado".
     obtenerProducto: (state) => (id) => {
       return state.lista.find(p => p.id === String(id));
     }

@@ -11,9 +11,8 @@ function leerCarritoGuardado() {
   }
 }
 
-// Store de Pinia: todo lo relacionado al carrito y al flujo de pago
-// (antes vivía como estado global manual en App.vue, compartido con
-// provide()/inject()). Ahora cualquier componente lo usa así:
+// Store de Pinia: todo lo relacionado al carrito y al flujo de pago.
+// Se usa así:
 //
 //   import { useCarritoStore } from '../stores/carrito';
 //   const carrito = useCarritoStore();

@@ -11,12 +11,13 @@
 // guardarse de verdad en el servidor, así que si falta el endpoint se
 // devuelve un error claro.
 //
-// Endpoints esperados (detalle completo en INTEGRACION_BACKEND.md):
+// Endpoints esperados:
 //   GET/POST /direcciones · PUT/DELETE /direcciones/{id}
 //   GET /mis-pedidos · POST /pedidos
 //   PUT /user · PUT /user/password
 import api from './api.js';
 import { esSesionDemo } from './demoAuth.js';
+import { parsearFecha } from '../utils/fechas.js';
 
 const SIN_ENDPOINT = [404, 405, 501];
 
@@ -169,7 +170,7 @@ export async function listarPedidos() {
     () => leerLocal('pedidos').map(normalizarPedido)
   );
   // más nuevos primero
-  return { datos: [...datos].sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0)), local };
+  return { datos: [...datos].sort((a, b) => (parsearFecha(b.fecha)?.getTime() ?? 0) - (parsearFecha(a.fecha)?.getTime() ?? 0)), local };
 }
 
 // Registra un pedido al terminar el pago. `pedido` sale de

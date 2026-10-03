@@ -54,7 +54,7 @@
 
 <script>
 import api from '../Api/api.js';
-import { limpiarTexto } from '../utils/textoBanner.js';
+import { limpiarTexto, htmlSeguro } from '../utils/textoBanner.js';
 
 // Carrusel del banner: cambia de diapositiva sola cada 10s y se puede
 // controlar con las flechas o los puntos. Mientras el mouse está encima
@@ -108,7 +108,7 @@ export default {
           id: b.id,
           icono: b.icono,
           etiqueta: limpiarTexto(b.etiqueta),
-          titulo: limpiarTexto(b.titulo),
+          titulo: htmlSeguro(limpiarTexto(b.titulo)),
           subtitulo: limpiarTexto(b.subtitulo),
           imagenUrl: obtenerUrlImagen(b)
         }));

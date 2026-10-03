@@ -5,10 +5,10 @@
       <router-link class="modal-close" :to="{name:'inicio'}">✕</router-link>
       <h1>Iniciar sesión</h1>
       <form @submit.prevent="iniciarSesion">
-      <div class="auth-field"><label>Correo electrónico:</label><input v-model="form.email" type="email" required></div>
+      <div class="auth-field"><label>Correo electrónico:</label><input v-model="form.email" type="email" autocomplete="email" required></div>
       <div class="auth-field">
         <label>Contraseña:</label>
-        <input v-model="form.password" :type="verClave ? 'text':'password'" required>
+        <input v-model="form.password" :type="verClave ? 'text':'password'" autocomplete="current-password" required>
         <button class="toggle-pass" :class="{activo: verClave}" type="button" :aria-pressed="verClave" :aria-label="verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'" :title="verClave ? 'Ocultar contraseña' : 'Mostrar contraseña'" @click="verClave=!verClave">👁️</button>
       </div>
       <button type="button" class="auth-forgot" @click="mostrarAyudaClave = !mostrarAyudaClave">Olvidé mi contraseña</button>
@@ -45,9 +45,8 @@ export default {
 
       this.cargando = true;
       try {
-        // El backend ya no necesita que le digamos si es un login de
-        // administrador: decide solo, según a qué cuenta pertenece el
-        // email (fantasma, dueño real o cliente).
+        // El backend decide si la cuenta es de administrador según el email
+        // (fantasma, dueño real o cliente).
         const response = await apiClient.post('/usuarios/login', {
           email: this.form.email,
           password: this.form.password

@@ -110,6 +110,7 @@
 import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
+import { parsearFecha, formatearFecha } from '../../utils/fechas.js';
 import { aplicarEnLote } from '../../utils/lote.js';
 import { formatearPrecio } from '../../catalog.js';
 import ColOrdenable from '../../components/ColOrdenable.vue';
@@ -147,9 +148,9 @@ function normalizarOrden(ordenBackend) {
   return {
     id: ordenBackend.id,
     cliente,
-    fecha: fechaCruda ? new Date(fechaCruda).toLocaleDateString('es-UY') : '—',
+    fecha: formatearFecha(fechaCruda),
     // fecha en milisegundos, solo para poder ordenar bien por esta columna
-    fechaMs: fechaCruda ? new Date(fechaCruda).getTime() : null,
+    fechaMs: parsearFecha(fechaCruda)?.getTime() ?? null,
     total,
     estado,
     items: itemsCrudos.map(item => ({

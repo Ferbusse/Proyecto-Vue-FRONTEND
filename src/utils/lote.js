@@ -1,7 +1,6 @@
 // Aplica la misma acción (borrar, archivar...) a varios ids en paralelo
-// y espera a que terminen TODAS, aunque alguna falle. Con Promise.all,
-// si fallaba una se cortaba todo: las demás sí se habían aplicado en el
-// servidor, pero la tabla no se recargaba y quedaba mostrando datos viejos.
+// y espera a que terminen todas, aunque alguna falle: así las que
+// salieron bien quedan aplicadas y la tabla se puede recargar igual.
 //
 // Devuelve los ids que fallaron (vacío si salió todo bien).
 export async function aplicarEnLote(ids, accion) {

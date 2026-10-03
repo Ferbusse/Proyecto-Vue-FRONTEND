@@ -15,10 +15,7 @@ export const CATALOGO = [
   { id: 'p12', name: 'Memoria MicroSD 64GB',         price: 690 }
 ];
 
-// Busca un producto por id en el catálogo de ejemplo; si no existe,
-// devuelve undefined (antes caía en CATALOGO[0], lo que mostraba en
-// silencio un producto distinto al pedido — mismo problema que se
-// corrigió en el getter equivalente de stores/productos.js).
+// Busca un producto por id en el catálogo de ejemplo; si no existe, devuelve undefined.
 export function obtenerProducto(id) {
   return CATALOGO.find(producto => producto.id === id);
 }

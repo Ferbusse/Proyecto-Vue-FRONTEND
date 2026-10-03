@@ -36,8 +36,7 @@
           <select v-model="ordenarPor">
             <option value="menor">Menor Precio</option>
             <option value="mayor">Mayor Precio</option>
-            <!-- "Más vendidos" vuelve cuando el backend exponga datos de ventas por
-                 producto (antes ordenaba por stock, que no es lo mismo). -->
+            <!-- "Más vendidos" vuelve cuando el backend exponga datos de ventas por producto. -->
           </select>
         </div>
         <p v-if="productos.cargando" class="producto-vacio">Cargando productos…</p>

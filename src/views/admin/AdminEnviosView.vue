@@ -57,6 +57,7 @@ import AdminTopbar from '../../components/AdminTopbar.vue';
 import AdminSidebar from '../../components/AdminSidebar.vue';
 import api from '../../Api/api.js';
 import { formatearPrecio } from '../../catalog.js';
+import { parsearFecha, formatearFecha } from '../../utils/fechas.js';
 import ColOrdenable from '../../components/ColOrdenable.vue';
 import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
 
@@ -122,9 +123,9 @@ export default {
         const response = await api.get('/ordenes', { params: { estado: 'enviado' } });
         this.envios = (response.data || []).map(orden => ({
           ...orden,
-          fecha: orden.fecha ? new Date(orden.fecha).toLocaleDateString('es-UY') : '—',
+          fecha: formatearFecha(orden.fecha),
           // fecha en milisegundos, solo para poder ordenar bien por esta columna
-          fechaMs: orden.fecha ? new Date(orden.fecha).getTime() : null
+          fechaMs: parsearFecha(orden.fecha)?.getTime() ?? null
         }));
       } catch (requestError) {
         console.error('Error al cargar envíos:', requestError);

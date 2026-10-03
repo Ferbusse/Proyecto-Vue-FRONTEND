@@ -4,13 +4,9 @@ import axios from 'axios';
 // Manda automáticamente el token guardado en localStorage en cada
 // pedido, así no hay que agregarlo a mano en cada llamada.
 //
-// A propósito NO fijamos un "Content-Type" fijo acá: axios ya elige
-// el correcto solo, según qué le mandemos — "application/json" para
-// un objeto común, o "multipart/form-data" (con el boundary correcto)
-// cuando el body es un FormData, como pasa al subir una imagen de
-// producto. Forzarlo a mano rompía justo ese segundo caso: el
-// navegador nunca llegaba a mandar el archivo con el formato que
-// Laravel espera, así que la imagen se perdía en el camino.
+// No se fija un "Content-Type": axios elige solo "application/json" para
+// un objeto común o "multipart/form-data" (con el boundary correcto)
+// para un FormData, que es lo que se usa al subir imágenes.
 const apiClient = axios.create({
   // La URL del backend se puede cambiar con VITE_API_URL (ver .env.example);
   // si no está definida, usa el Laravel local de siempre.

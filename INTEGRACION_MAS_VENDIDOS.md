@@ -1,7 +1,7 @@
 # Integración: productos más vendidos (home)
 
 El frontend ya está listo. Falta que el backend exponga **un endpoint**.
-Hasta que exista, la sección "Más vendidos" de la home no se muestra (no hay datos falsos).
+Hasta que exista, la sección "Novedades" de la home muestra el catálogo general en su lugar.
 
 ## Contrato
 
@@ -14,8 +14,8 @@ Respuesta: un **array JSON de productos con el mismo formato que `GET /api/produ
 (`id`, `nombre`, `precio_venta`, `imagen_url`, `categorias`, ...), ordenado del más
 vendido al menos vendido. Sin productos archivados (`archivado = true`).
 
-- Si no hay ventas todavía, devolver `[]` (la sección queda oculta).
-- Si el backend usa otra ruta, se cambia en un solo lugar: `src/Api/masVendidos.js` (`RUTA_MAS_VENDIDOS`).
+- Si no hay ventas todavía, devolver `[]` (la home muestra el catálogo general en su lugar).
+- Si el backend usa otra ruta, se cambia en un solo lugar: `cargarNovedades()` en `src/views/InicioView.vue`.
 - No hace falta tocar ningún componente Vue.
 
 ## Ejemplo de referencia (Laravel)

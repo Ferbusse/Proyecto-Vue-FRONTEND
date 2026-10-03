@@ -1,0 +1,141 @@
+  /* Carrito (panel deslizante), checkout, pasos del pago, modales y métodos de pago. */
+
+
+  /* ===== INDICADOR DE PASOS DEL PAGO ===== */
+  /* Usado en el checkout y en el modal de "elegir método de pago". */
+  .pago-pasos{display:flex; align-items:flex-start; justify-content:center; gap:0; list-style:none; margin:0 0 36px; padding:0; max-width:520px; margin-left:auto; margin-right:auto;}
+  .pago-paso{flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative; min-width:0;}
+  .pago-paso::before{content:''; position:absolute; top:15px; left:-50%; width:100%; height:2px; background:var(--linea); z-index:0;}
+  .pago-paso:first-child::before{display:none;}
+  .pago-paso.completo::before{background:var(--pago-dorado);}
+  .pago-paso-marca{position:relative; z-index:1; width:30px; height:30px; border-radius:50%; background:#fff; border:2px solid var(--linea); color:#999; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;}
+  .pago-paso.completo .pago-paso-marca{background:var(--pago-dorado); border-color:var(--pago-dorado); color:#fff;}
+  .pago-paso.activo .pago-paso-marca{background:var(--azul); border-color:var(--azul); color:#fff; box-shadow:0 0 0 4px rgba(20,32,140,.14);}
+  .pago-paso-texto{margin-top:8px; font-size:12.5px; font-weight:700; color:#999; line-height:1.3; padding:0 4px;}
+  .pago-paso.activo .pago-paso-texto{color:var(--azul);}
+  .pago-paso.completo .pago-paso-texto{color:var(--pago-tinta);}
+
+  /* ===== FINALIZAR COMPRA ===== */
+  .pago-page{max-width:1100px; margin:0 auto; padding:40px 32px 0;}
+  .checkout-layout{display:flex; gap:40px; flex-wrap:wrap;}
+  .checkout-form{flex:1; min-width:280px;}
+  /* Superficie "papel" compartida por la tarjeta de datos y el recibo,
+     para que se lean como parte del mismo paso. */
+  .pago-tarjeta-contenido, .pago-recibo{background:var(--pago-papel); border:1px solid var(--linea); border-radius:6px; padding:28px 30px;}
+  .pago-card-titulo{margin:0 0 4px; color:var(--pago-tinta); font-size:19px; font-weight:800;}
+  .pago-card-subtitulo{margin:0 0 22px; color:#6b7290; font-size:13px;}
+  .checkout-form .form-group input{background:#fff;}
+  .checkout-form .form-group input:focus{outline:none; border-color:var(--azul); box-shadow:0 0 0 2px rgba(20,32,140,.12);}
+  .form-row{display:flex; gap:24px; margin-bottom:20px; flex-wrap:wrap;}
+  .form-group{flex:1; min-width:180px;}
+  .form-group label{display:block; color:var(--azul); font-weight:700; margin-bottom:6px; font-size:14px;}
+  .form-group input, .form-group select, .form-group textarea{width:100%; padding:10px 12px; border:1px solid #999; border-radius:2px; font-size:14px; font-family:inherit;}
+  .form-group textarea{resize:vertical;}
+
+  .checkout-summary{width:400px; flex-shrink:0;}
+  /* Resumen del pedido con forma de recibo: ítems, línea punteada y total. */
+  .pago-recibo-vacio{padding:20px 0; text-align:center; color:#888; font-size:14px;}
+  .pago-recibo-items{display:flex; flex-direction:column; gap:14px;}
+  .pago-recibo-fila{display:flex; align-items:center; gap:12px;}
+  .pago-recibo-fila .thumb{width:52px; height:52px; flex-shrink:0; border-radius:4px;}
+  .pago-recibo-detalle{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .pago-recibo-nombre{color:var(--pago-tinta); font-weight:700; font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pago-recibo-cantidad{color:#8790ad; font-size:12.5px; margin-top:2px;}
+  .pago-recibo-subtotal{color:var(--pago-tinta); font-weight:700; font-size:13.5px; white-space:nowrap;}
+  /* la línea punteada "de recibo" entre los ítems y el total */
+  .pago-recibo-divisor{margin:20px 0; border-top:2px dashed #c7cbe0;}
+  .pago-recibo-total{display:flex; justify-content:space-between; align-items:baseline; font-weight:800; color:var(--azul);}
+  .pago-recibo-total span:first-child{font-size:14px; color:var(--pago-tinta); font-weight:700;}
+  .pago-recibo-total span:last-child{font-size:22px;}
+  .checkout-actions{text-align:center; margin:34px 0 60px;}
+
+  /* ===== PANEL DESLIZANTE DEL CARRITO ===== */
+  .cart-drawer-overlay{position:fixed; inset:0; background:rgba(15,26,112,0); pointer-events:none; z-index:500; transition:background .3s;}
+  .cart-drawer-overlay.open{background:rgba(15,26,112,.55); pointer-events:auto;}
+  .cart-drawer{position:fixed; top:0; right:0; height:100%; width:420px; max-width:92vw; background:#fff; box-shadow:-6px 0 24px rgba(0,0,0,.2); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .35s cubic-bezier(.65,0,.35,1);}
+  .cart-drawer-overlay.open .cart-drawer{transform:translateX(0);}
+  .cart-drawer-header{background:var(--azul); color:#fff; padding:20px 22px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;}
+  .cart-drawer-header h3{margin:0; font-size:20px;}
+  .cart-drawer-close{background:none; border:none; color:#fff; font-size:20px;}
+  .cart-drawer-items{flex:1; overflow-y:auto;}
+  .cart-drawer-empty{padding:50px 22px; text-align:center; color:#888; font-size:14px;}
+  .cart-drawer-item{display:flex; align-items:center; gap:12px; padding:14px 22px; border-bottom:1px solid var(--linea-naranja);}
+  .cart-drawer-item .thumb{width:56px; height:48px; flex-shrink:0;}
+  .cart-drawer-item .info{flex:1; min-width:0;}
+  .cart-drawer-item .info .name{color:var(--azul); font-weight:700; font-size:14px; line-height:1.2;}
+  .cart-drawer-item .info .price{color:#555; font-size:12px; margin-top:4px;}
+  .cart-drawer-item .qty-row{display:flex; align-items:center; gap:8px; margin-top:6px;}
+  .cart-drawer-item .qty-row button{width:22px; height:22px; border:1px solid #999; background:#fff; border-radius:3px; font-size:13px; line-height:1; color:#333;}
+  .cart-drawer-item .qty-row span{font-size:13px; min-width:14px; text-align:center;}
+  .cart-drawer-item .remove{background:none; border:none; color:#c0392b; font-size:18px; flex-shrink:0;}
+  .cart-drawer-footer{border-top:1px solid var(--linea); padding:18px 22px; flex-shrink:0;}
+  .cart-drawer-total{display:flex; justify-content:space-between; font-weight:800; color:var(--azul); font-size:17px; margin-bottom:14px;}
+
+  /* ===== MODALES ===== */
+  .modal-overlay{position:fixed; inset:0; background:rgba(15,26,112,.65); display:none; align-items:flex-start; justify-content:center; z-index:300; overflow:auto; padding:40px 16px;}
+  .modal-overlay.open{display:flex; animation:aparecer .2s ease both;}
+  .modal-overlay.open .modal-box{animation:subir-suave .22s ease both;}
+  .modal-box{background:#f7f7f9; width:100%; max-width:500px; padding:30px 40px 40px; position:relative; margin-top:20px;}
+  .modal-box-ancho{max-width:600px;}
+  .modal-close{position:absolute; top:24px; left:24px; font-size:22px; color:var(--azul); background:none; border:none;}
+  .modal-box h2{text-align:center; color:var(--azul); font-weight:800; font-size:26px; margin:40px 0 30px;}
+  /* ===== ELEGIR MÉTODO DE PAGO (paso 2) ===== */
+  .modal-box-pago-metodo{background:var(--pago-papel);}
+  .pago-metodo-titulo{text-align:center; color:var(--pago-tinta); font-weight:800; font-size:21px; margin:4px 0 22px;}
+
+  /* Fichas con proporción de tarjeta, con un "chip" y la marca abajo.
+     El color de cada marca vive en --pago-metodo-color y tiñe el chip y el texto. */
+  .pago-metodo-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px;}
+  .pago-metodo-tarjeta{position:relative; aspect-ratio:1.55/1; border:1.5px solid var(--linea); border-radius:8px; background:#fff; display:flex; flex-direction:column; justify-content:space-between; align-items:flex-start; padding:10px 12px; text-align:left;}
+  .pago-metodo-tarjeta.visa{--pago-metodo-color:#1a1f71;}
+  .pago-metodo-tarjeta.mc{--pago-metodo-color:#c9202f;}
+  .pago-metodo-tarjeta.oca{--pago-metodo-color:#1478c6;}
+  .pago-metodo-chip{width:22px; height:16px; border-radius:3px; background:var(--pago-metodo-color); opacity:.85;}
+  .pago-metodo-marca{font-weight:800; font-size:12.5px; color:var(--pago-metodo-color); letter-spacing:.2px;}
+  .pago-metodo-tarjeta.selected{border-color:var(--pago-dorado); box-shadow:0 0 0 2px rgba(201,146,46,.22);}
+  .pago-metodo-check{position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%; background:var(--pago-dorado); color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; opacity:0; transform:scale(.5); transition:opacity .15s ease, transform .15s ease;}
+  .pago-metodo-tarjeta.selected .pago-metodo-check,
+  .pago-metodo-banco.selected .pago-metodo-check{opacity:1; transform:scale(1);}
+
+  /* Ficha ancha para transferencia, con el mismo estilo que las de tarjeta. */
+  .pago-metodo-banco{position:relative; width:100%; display:flex; align-items:center; gap:12px; border:1.5px solid var(--linea); border-radius:8px; background:#fff; padding:14px 16px; margin:0 0 20px; text-align:left;}
+  .pago-metodo-banco.selected{border-color:var(--pago-dorado); box-shadow:0 0 0 2px rgba(201,146,46,.22);}
+  .pago-metodo-banco-icono{flex-shrink:0; width:36px; height:36px; border-radius:50%; background:var(--pago-papel); color:var(--azul); display:flex; align-items:center; justify-content:center;}
+  .pago-metodo-banco-icono svg{width:18px; height:18px;}
+  .pago-metodo-banco-texto{flex:1; display:flex; flex-direction:column;}
+  .pago-metodo-banco-texto strong{color:var(--pago-tinta); font-size:14px;}
+  .pago-metodo-banco-texto small{color:#8790ad; font-size:12px; margin-top:2px;}
+  .pago-metodo-banco .pago-metodo-check{position:static; opacity:0; transform:scale(.5); margin-left:auto;}
+  .pago-metodo-tarjeta:focus-visible,
+  .pago-metodo-banco:focus-visible{outline:3px solid var(--azul); outline-offset:2px;}
+  .modal-btn{display:block; width:100%; background:var(--azul); color:#fff; border:none; padding:16px; font-weight:800; font-size:18px; border-radius:3px; margin-top:26px; box-shadow:0 3px 0 var(--azul-oscuro);}
+  .modal-btn:active{transform:translateY(2px); box-shadow:none;}
+  .modal-btn:disabled{opacity:.6; cursor:not-allowed;}
+  .modal-help{display:block; text-align:center; margin:16px auto 0; background:#dfe2f7; color:var(--azul); font-weight:700; border:none; padding:8px 14px; border-radius:3px;}
+  .card-form-row{display:flex; gap:16px; margin-bottom:16px;}
+  .card-form-row .fg{flex:1;}
+  .card-form-row .fg label{display:block; color:var(--azul); font-weight:700; font-size:13px; margin-bottom:5px;}
+  .card-form-row .fg input{width:100%; padding:9px 10px; border:1px solid #999; border-radius:2px; font-size:14px; font-family:inherit; transition:border-color .15s ease;}
+  .card-form-row .fg input:focus{outline:none; border-color:var(--azul); box-shadow:0 0 0 2px rgba(20,32,140,.12);}
+  .visa-badge{border:1px solid #999; border-radius:4px; width:100px; height:46px; display:flex; align-items:center; justify-content:center; color:#1a1f71; font-weight:800; font-style:italic; text-align:center; padding:0 6px; font-size:13px;}
+
+  /* ===== TARJETA VISUAL (vista previa mientras se completa el pago) ===== */
+  .tarjeta-visual{
+    position:relative; overflow:hidden; border-radius:14px; padding:22px 24px;
+    color:#fff; margin-bottom:26px; box-shadow:0 12px 26px rgba(20,32,140,.3);
+    background:linear-gradient(135deg, var(--azul) 0%, var(--azul-oscuro) 100%);
+  }
+  .tarjeta-visual::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:repeating-radial-gradient(circle at 90% 10%, rgba(255,255,255,.07) 0 2px, transparent 2px 30px);
+  }
+  .tarjeta-visual-mc{background:linear-gradient(135deg, #2a2f45 0%, #14151f 100%);}
+  .tarjeta-visual-oca{background:linear-gradient(135deg, #1478c6 0%, #0d4d84 100%);}
+  .tarjeta-visual-top{position:relative; display:flex; align-items:center; justify-content:space-between; margin-bottom:26px;}
+  .tarjeta-chip{width:38px; height:28px; border-radius:5px; background:linear-gradient(135deg, #f4d99b 0%, #d8b45c 100%); box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);}
+  .tarjeta-marca{font-weight:800; font-style:italic; letter-spacing:.5px; font-size:15px; text-shadow:0 1px 2px rgba(0,0,0,.2);}
+  .tarjeta-numero{position:relative; font-size:19px; letter-spacing:2px; font-family:'Courier New', monospace; margin-bottom:22px;}
+  .tarjeta-visual-bottom{position:relative; display:flex; justify-content:space-between; align-items:flex-end; gap:16px;}
+  .tarjeta-mini-label{font-size:9px; text-transform:uppercase; opacity:.75; letter-spacing:.8px; display:block; margin-bottom:3px;}
+  .tarjeta-nombre{font-size:14px; font-weight:600; letter-spacing:.5px; text-transform:uppercase; word-break:break-word;}
+  .tarjeta-vencimiento{font-size:14px; font-weight:600; font-family:'Courier New', monospace;}

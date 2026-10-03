@@ -137,7 +137,7 @@ import api from '../../Api/api.js';
 import { aplicarEnLote } from '../../utils/lote.js';
 import ColOrdenable from '../../components/ColOrdenable.vue';
 import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
-import { limpiarTexto, textoParaEnviar } from '../../utils/textoBanner.js';
+import { limpiarTexto, textoParaEnviar, htmlSeguro } from '../../utils/textoBanner.js';
 
 // El formulario pide la imagen (obligatoria al crear) y tres textos
 // opcionales: título, subtítulo y "texto chico" (la etiqueta que va
@@ -151,7 +151,7 @@ const VALORES_ORDEN = {
   orden: banner => Number(banner.orden)
 };
 
-// Mismos degradés que .banner-slide-1..4 en style.css, para que la
+// Mismos degradés que .banner-slide-1..4 en styles/tienda.css, para que la
 // muestra de color en la tabla del admin coincida con lo que se ve en
 // el carrusel real (cuando el banner no tiene imagen propia).
 const COLORES = {
@@ -220,7 +220,7 @@ export default {
   methods: {
     obtenerUrlImagenBanner,
     tituloLimpio(banner) {
-      return limpiarTexto(banner.titulo);
+      return htmlSeguro(limpiarTexto(banner.titulo));
     },
     ordenarPor(clave) {
       this.ordenTabla = alternarOrden(this.ordenTabla, clave);
@@ -372,8 +372,7 @@ export default {
           datos.append('quitar_imagen', '1');
         }
         if (!this.editandoId) {
-          // Como el formulario ya no tiene el casillero de "mostrar en
-          // el carrusel", un banner nuevo entra activo directamente.
+          // Un banner nuevo entra activo (visible en el carrusel).
           datos.append('activo', '1');
         }
 
@@ -406,16 +405,12 @@ export default {
       const vecino = this.banners[j];
 
       this.error = '';
-      try {
-        await Promise.all([
-          api.put(`/banners/${banner.id}`, { orden: vecino.orden }),
-          api.put(`/banners/${vecino.id}`, { orden: banner.orden })
-        ]);
-        await this.cargarBanners();
-      } catch (requestError) {
-        console.error('Error al reordenar los banners:', requestError);
-        this.error = 'No se pudo cambiar el orden de los banners.';
-      }
+      const fallidos = await aplicarEnLote([banner.id, vecino.id], id =>
+        api.put(`/banners/${id}`, { orden: id === banner.id ? vecino.orden : banner.orden })
+      );
+      // se recarga siempre, así si falló uno de los dos la tabla muestra lo que quedó guardado
+      await this.cargarBanners();
+      if (fallidos.length) this.error = 'No se pudo cambiar el orden de los banners.';
     },
 
     // -- selección: agregar al carrusel / eliminar / archivar --

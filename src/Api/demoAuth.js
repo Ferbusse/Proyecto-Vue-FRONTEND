@@ -2,11 +2,6 @@
 // token temporal. El backend no crea registros para este perfil.
 
 export const EMAIL_DEMO = 'demo@zonamovil.com';
-export const CLAVE_DEMO = 'demo1234';
-
-export function intentarLoginDemo(email, password) {
-  return email === EMAIL_DEMO && password === CLAVE_DEMO;
-}
 
 export function esSesionDemo() {
   try {

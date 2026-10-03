@@ -119,6 +119,20 @@ export default {
         this.errorFormulario = 'Completá todos los datos de envío antes de continuar.';
         return;
       }
+      if (!/^\S+@\S+\.\S+$/.test(this.form.email)) {
+        this.errorFormulario = 'Ingresá un correo electrónico válido.';
+        return;
+      }
+      // Un producto se puede agotar después de haberlo puesto en el carrito.
+      const sinStock = this.carrito.lineas.filter(({ product, qty }) => {
+        const stock = Number(product.stock);
+        return product.agotado || (Number.isFinite(stock) && qty > stock);
+      });
+      if (sinStock.length) {
+        const nombres = sinStock.map(linea => linea.product.name).join(', ');
+        this.errorFormulario = `No hay stock suficiente de: ${nombres}. Ajustá el carrito para continuar.`;
+        return;
+      }
       this.carrito.datosEnvio = { ...this.form };
       this.carrito.continuarCompra();
     }

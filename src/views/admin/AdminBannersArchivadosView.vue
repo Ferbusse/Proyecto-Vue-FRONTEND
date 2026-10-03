@@ -48,7 +48,7 @@ import api from '../../Api/api.js';
 import { obtenerUrlImagenBanner } from './AdminBannersView.vue';
 import ColOrdenable from '../../components/ColOrdenable.vue';
 import { alternarOrden, ordenarLista } from '../../utils/ordenamiento.js';
-import { limpiarTexto } from '../../utils/textoBanner.js';
+import { limpiarTexto, htmlSeguro } from '../../utils/textoBanner.js';
 
 const COLORES = {
   1: 'linear-gradient(135deg,#14208c 0%,#0f1a70 100%)',
@@ -87,7 +87,7 @@ export default {
   methods: {
     obtenerUrlImagenBanner,
     tituloLimpio(banner) {
-      return limpiarTexto(banner.titulo);
+      return htmlSeguro(limpiarTexto(banner.titulo));
     },
     ordenarPor(clave) {
       this.orden = alternarOrden(this.orden, clave);

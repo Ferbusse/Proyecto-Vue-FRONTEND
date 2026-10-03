@@ -52,7 +52,7 @@
 import CuentaShell from '../../components/CuentaShell.vue';
 import api from '../../Api/api.js';
 import { esSesionDemo, obtenerUsuarioDemo } from '../../Api/demoAuth.js';
-import { actualizarPerfil, cambiarClave } from '../../Api/cuenta.js';
+import { actualizarPerfil, cambiarClave, obtenerUsuarioGuardado } from '../../Api/cuenta.js';
 
 export default {
   name: 'DetallesCuentaView',
@@ -89,7 +89,14 @@ export default {
       const response = await api.get('/user');
       this.cargarUsuario(response.data?.data || response.data);
     } catch (error) {
-      this.$router.push({ name: 'login' });
+      // Solo si el servidor dice que la sesión no vale. Si es un problema de
+      // red, mostramos los datos que quedaron guardados al iniciar sesión.
+      const guardado = obtenerUsuarioGuardado();
+      if (error.response?.status === 401 || !guardado) {
+        this.$router.push({ name: 'login' });
+        return;
+      }
+      this.cargarUsuario(guardado);
     }
   },
   methods: {

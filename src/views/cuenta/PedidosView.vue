@@ -41,6 +41,7 @@
 import CuentaShell from '../../components/CuentaShell.vue';
 import { listarPedidos, mensajeDeError } from '../../Api/cuenta.js';
 import { formatearPrecio } from '../../catalog.js';
+import { formatearFecha } from '../../utils/fechas.js';
 
 // Mismos colores y etiquetas que usa el admin para el estado de las órdenes.
 const ESTADOS = {
@@ -77,9 +78,7 @@ export default {
       const id = String(pedido.id);
       return id.startsWith('L') ? '#' + id.slice(-5).toUpperCase() : '#' + id;
     },
-    formatearFecha(fecha) {
-      return fecha ? new Date(fecha).toLocaleDateString('es-UY') : '—';
-    },
+    formatearFecha,
     nombreMetodo(metodo) {
       return METODOS[metodo] || metodo;
     }

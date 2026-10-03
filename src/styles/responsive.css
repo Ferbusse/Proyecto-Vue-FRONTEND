@@ -1,0 +1,178 @@
+  /* Ajustes por tamaño de pantalla. Va último a propósito: tiene que pisar a todo lo anterior. */
+
+  /* ===== RESPONSIVE =====
+     Cortes: 1200 (notebooks), 1024 (tablet horizontal), 900 (tablet
+     vertical), 640 (celular) y 480 (celular chico). Arriba de 1200 se
+     usa el diseño base, que ya queda centrado con max-width. */
+
+  /* el recuadro de productos deja de tocar los bordes antes de llegar a 1080px */
+  @media(max-width:1128px){
+    .products-wrap{width:auto; margin-left:16px; margin-right:16px;}
+  }
+
+  @media(max-width:1200px){
+    /* el buscador deja de tener 520px fijos y se adapta al espacio libre */
+    .topbar{grid-template-columns:auto minmax(240px,1fr) auto; padding:14px 24px;}
+    .logo{margin-left:0;}
+    .logo-img{height:96px;}
+    .navbar{padding:10px 24px;}
+    .categorias-wrap{margin-left:0;}
+    .cat-grid{grid-template-columns:repeat(3,1fr);}
+  }
+
+  @media(max-width:1024px){
+    /* 72px de costado para que el texto no quede debajo de las flechas */
+    .banner{height:280px; padding:50px 72px;}
+    .banner h1{font-size:28px;}
+    .banner .banner-icon{width:140px; height:140px;}
+    .franjas-confianza{gap:32px;}
+    .product-row{gap:20px;}
+    .cat-sidebar{width:240px;}
+    .cat-main{padding:20px 24px;}
+    .product-detail{gap:36px; padding:0 24px;}
+    .pd-desc{padding:0 24px;}
+    .checkout-summary{width:340px;}
+    .checkout-layout{gap:28px;}
+    .auth-card{padding:50px 56px;}
+    .admin-main{padding:20px 24px;}
+  }
+
+  @media(max-width:900px){
+    /* Encabezado apilado: logo, buscador y cuenta uno debajo del otro */
+    .topbar{grid-template-columns:auto 1fr; grid-template-areas:"logo cuenta" "buscador buscador"; gap:10px 16px; padding:12px 16px;}
+    .logo{grid-area:logo;}
+    .logo-img{height:72px;}
+    .search-box{grid-area:buscador; min-width:0; max-width:none;}
+    .account{grid-area:cuenta;}
+    .navbar{justify-content:space-between; padding:8px 16px;}
+    .mega-menu{flex-direction:column; width:min(340px, calc(100vw - 32px));}
+    .mega-menu-list{width:100%; max-height:50vh;}
+    .mega-menu-panel{width:100%; margin:8px 0 0; flex-direction:column;}
+
+    .franjas-confianza{display:grid; grid-template-columns:repeat(3,auto); justify-content:center; gap:20px; padding:26px 16px;}
+    .franja-item{gap:10px;}
+
+    .banner{height:auto; min-height:260px; padding:40px 64px;}
+    .banner h1{font-size:25px;}
+    .banner .banner-icon{width:110px; height:110px;}
+
+    .cat-body{flex-direction:column;}
+    .cat-sidebar{width:100%; min-height:0;}
+    .cat-inner-sidebar{padding:18px 16px;}
+
+    .product-detail{margin:24px auto; gap:28px; padding:0 16px;}
+    .pd-desc{padding:0 16px;}
+    .pd-info h1{font-size:26px;}
+
+    .pago-page{padding:28px 16px 0;}
+
+
+    .breadcrumb ol{flex-wrap:wrap; padding:10px 16px;}
+    .cuenta-shell{flex-direction:column; gap:24px; margin:24px auto; padding:0 16px;}
+    .cuenta-sidebar{width:100%;}
+    .cuenta-grid{grid-template-columns:repeat(2, 1fr);}
+
+    /* Login / registro: sin el panel azul de costado, el formulario centrado */
+    .auth-shell{justify-content:center; background:#f7f7f9;}
+    .auth-side{display:none;}
+    .auth-card{padding:40px 32px;}
+
+    .admin-topbar{padding:16px;}
+    .admin-shell{flex-direction:column;}
+    .admin-sidebar{width:100%; flex-direction:row; flex-wrap:wrap; padding:14px 16px; gap:10px 18px;}
+    .admin-sidebar a{font-size:16px;}
+    .admin-user{margin-top:0;}
+    .admin-main{padding:20px 16px;}
+    .analytics-grid, .lower-grid{grid-template-columns:1fr;}
+
+    footer.site-footer{padding:32px 20px 20px;}
+  }
+
+  @media(max-width:700px){
+    .site-footer-cols{flex-direction:column; gap:24px;}
+    .site-footer-bottom{flex-direction:column; text-align:center;}
+  }
+
+  @media(max-width:640px){
+    /* 16px en el buscador evita que iPhone haga zoom al tocarlo */
+    .search-input{font-size:16px;}
+
+    .banner{min-height:230px; padding:30px 54px 44px;}
+    .banner .eyebrow{font-size:11px; letter-spacing:1.5px;}
+    .banner h1{font-size:22px;}
+    .banner p{font-size:14px;}
+    .banner .banner-icon{display:none;}
+    .banner-slider .arrow{width:34px; height:34px; font-size:26px;}
+    .banner-slider .arrow.left{left:10px;} .banner-slider .arrow.right{right:10px;}
+    .banner-dots{bottom:12px;}
+
+    /* Franja de confianza en columna, con los ítems alineados entre sí */
+    .franjas-confianza{grid-template-columns:auto; gap:16px; padding:22px 20px;}
+    .franja-item{max-width:none;}
+
+    /* Productos en 2 columnas: las filas de 3 se "disuelven" (display:contents)
+       y el propio recuadro pasa a ser la grilla. */
+    .products-wrap{display:grid; grid-template-columns:repeat(2,1fr); gap:22px 14px; padding:0 14px 22px;}
+    .products-wrap > :not(.product-row){grid-column:1 / -1;}
+    .product-row{display:contents;}
+    .products-wrap-titulo{font-size:20px; padding:20px 2px 0;}
+    .product-name{font-size:13px;}
+
+    .cta-catalogo-wrap{padding:0 16px; margin-bottom:32px;}
+    .cta-catalogo{flex-direction:column; text-align:center; padding:34px 22px;}
+    .cta-catalogo-texto{max-width:none;}
+    .cta-catalogo-texto h2{font-size:22px;}
+    .cta-catalogo-icono{width:96px; height:96px; padding:18px; gap:7px;}
+    .cta-catalogo-icono span{width:24px; height:24px;}
+
+    .cat-main{padding:16px;}
+    .cat-grid{grid-template-columns:repeat(2,1fr); gap:14px;}
+    .cat-toolbar{flex-wrap:wrap;}
+    .pagination{justify-content:center; flex-wrap:wrap;}
+
+    .pd-image, .pd-info{min-width:0; flex-basis:100%;}
+    .pd-info h1{font-size:24px;}
+    .pd-acciones{max-width:none;}
+
+    .checkout-layout{flex-direction:column;}
+    .checkout-summary{width:100%;}
+    .pago-tarjeta-contenido, .pago-recibo{padding:22px 18px;}
+    .form-row{gap:16px; margin-bottom:16px;}
+    .card-form-row{flex-wrap:wrap;}
+    .card-form-row .fg{min-width:130px;}
+
+    .cuenta-grid{grid-template-columns:1fr;}
+
+    .auth-card{padding:28px 20px 36px;}
+    .auth-card .modal-close{top:20px; left:20px;}
+    .auth-card h1{font-size:28px; margin:36px 0 32px;}
+    .auth-field{margin-bottom:22px;}
+    .auth-field input{font-size:16px;}
+
+    .admin-tile{min-width:0; flex-basis:100%;}
+    .stat-card{min-width:0; flex-basis:100%;}
+    .cal-mes-nav h3{min-width:0;}
+    .cal-card{padding:16px;}
+    .calendario-grid{gap:3px;}
+    .calendario-monto{display:none;}
+
+    footer.site-footer{padding:28px 16px 16px;}
+  }
+
+  @media(max-width:480px){
+    .logo-img{height:60px;}
+    .banner{min-height:210px; padding:26px 46px 42px;}
+    .banner h1{font-size:20px;}
+    .products-wrap{gap:18px 10px; padding:0 10px 18px;}
+    .cat-grid{gap:10px;}
+    .cat-card .name{font-size:12px;}
+    .cart-link{font-size:11px;}
+
+    /* Menos relleno en los modales para que el contenido tenga más aire en celulares angostos. */
+    .modal-box{padding:24px 20px 30px;}
+    .modal-box h2{font-size:22px; margin-top:34px;}
+    /* Menos espacio entre las fichas de pago para que no queden demasiado angostas. */
+    .pago-metodo-grid{gap:8px;}
+    .pago-metodo-tarjeta{padding:8px 9px;}
+    .pago-metodo-marca{font-size:11px;}
+  }

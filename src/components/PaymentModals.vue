@@ -65,23 +65,17 @@
       </div>
 
       <div class="card-form-row">
-        <div class="fg" style="flex:2;"><label>Número de la Tarjeta:</label><input v-model="formularioTarjeta.numero" type="text" inputmode="numeric" maxlength="16" placeholder="0000 0000 0000 0000"></div>
+        <div class="fg" style="flex:2;"><label>Número de la Tarjeta:</label><input v-model="formularioTarjeta.numero" type="text" inputmode="numeric" maxlength="19" autocomplete="cc-number" placeholder="0000 0000 0000 0000"></div>
         <div class="visa-badge">{{ etiquetaMarca }}</div>
       </div>
       <div class="card-form-row">
-        <div class="fg"><label>Mes/Año:</label><input v-model="formularioTarjeta.mesAno" type="text" placeholder="MM/AA" maxlength="5"></div>
-        <div class="fg"><label>CVV:</label><input v-model="formularioTarjeta.cvv" type="text" inputmode="numeric" maxlength="4" placeholder="123"></div>
+        <div class="fg"><label>Mes/Año:</label><input v-model="formularioTarjeta.mesAno" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AA" maxlength="5"></div>
+        <div class="fg"><label>CVV:</label><input v-model="formularioTarjeta.cvv" type="text" inputmode="numeric" autocomplete="cc-csc" maxlength="4" placeholder="123"></div>
       </div>
       <div class="card-form-row">
         <div class="fg"><label>Nombre completo:</label><input v-model="formularioTarjeta.nombre" type="text"></div>
         <div class="fg"><label>Apellido:</label><input v-model="formularioTarjeta.apellido" type="text"></div>
       </div>
-      <div class="card-form-row">
-        <div class="fg"><label>Documento de identidad:</label><input type="text"></div>
-        <div class="fg"><label>Teléfono:</label><input type="text"></div>
-      </div>
-      <div class="card-form-row"><div class="fg"><label>Correo Electrónico:</label><input type="email"></div></div>
-      <div class="card-form-row"><div class="fg"><label>Dirección:</label><input type="text"></div></div>
       <p v-if="errorTarjeta" class="auth-error">{{ errorTarjeta }}</p>
       <button class="modal-btn" @click="finalizar">Finalizar pago</button>
       <button class="modal-help" @click="avisoDemo('Un asesor te contactará en breve')">Necesito ayuda</button>
@@ -105,8 +99,7 @@ export default {
         { valor: 'mc', etiqueta: 'MasterCard' },
         { valor: 'oca', etiqueta: 'OCA' }
       ],
-      // solo alimentan la tarjeta visual de arriba — el envío del
-      // pago sigue funcionando exactamente igual que antes
+      // datos de la tarjeta: alimentan la vista previa y la validación
       formularioTarjeta: {
         numero: '',
         mesAno: '',
@@ -150,12 +143,26 @@ export default {
       // si resultado === 'tarjeta', el modal de tarjeta ya se abrió solo
     },
     finalizar() {
-      // Antes se podía tocar "Finalizar pago" con la tarjeta
-      // completamente vacía. La validación acá es básica (es un pago
-      // simulado, no se cobra nada de verdad) pero al menos evita eso.
+      // Validación básica: es un pago simulado, no se cobra nada de verdad.
       const digitos = (this.formularioTarjeta.numero || '').replace(/\D/g, '');
       if (digitos.length < 16 || !this.formularioTarjeta.mesAno || !this.formularioTarjeta.cvv || !this.formularioTarjeta.nombre || !this.formularioTarjeta.apellido) {
         this.errorTarjeta = 'Completá todos los datos de la tarjeta antes de continuar.';
+        return;
+      }
+      const vencimiento = this.formularioTarjeta.mesAno.match(/^(\d{2})\/(\d{2})$/);
+      const mes = vencimiento ? Number(vencimiento[1]) : 0;
+      if (!vencimiento || mes < 1 || mes > 12) {
+        this.errorTarjeta = 'El vencimiento tiene que tener el formato MM/AA (por ejemplo 08/27).';
+        return;
+      }
+      // vence el último día de ese mes
+      const finDelMes = new Date(2000 + Number(vencimiento[2]), mes, 0, 23, 59, 59);
+      if (finDelMes < new Date()) {
+        this.errorTarjeta = 'La tarjeta está vencida.';
+        return;
+      }
+      if (!/^\d{3,4}$/.test(this.formularioTarjeta.cvv)) {
+        this.errorTarjeta = 'El CVV son los 3 o 4 números del dorso de la tarjeta.';
         return;
       }
       this.errorTarjeta = '';

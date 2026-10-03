@@ -1,0 +1,30 @@
+  /* Microanimaciones (hover, fundidos) y el apagado general para "reducir movimiento". */
+
+  /* ===== MICROANIMACIONES =====
+     Todas cortas (≤ .25s) y de poco recorrido: acompañan, no llaman la atención. */
+  @keyframes aparecer{from{opacity:0;} to{opacity:1;}}
+  @keyframes subir-suave{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  /* tarjetas de producto (inicio, relacionados, deseados) y del catálogo */
+  .product-img, .cat-card{transition:box-shadow .2s ease, transform .2s ease;}
+  .product-img img, .cat-card .img-placeholder img{transition:transform .35s ease;}
+  .product-card:hover .product-img{box-shadow:0 6px 16px rgba(20,32,140,.12);}
+  .product-card:hover .product-img img, .cat-card:hover .img-placeholder img{transform:scale(1.03);}
+  .cat-card:hover{transform:translateY(-2px); box-shadow:0 6px 16px rgba(20,32,140,.12);}
+  .product-card:focus-visible{outline:3px solid var(--azul); outline-offset:4px;}
+
+  /* botones y links: cambio de color gradual */
+  .btn-primary, .cta-catalogo-btn, .search-btn, .pagination button, .modal-btn, .auth-submit, .cuenta-card{transition:background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;}
+  .btn-primary:hover:not(:disabled), .modal-btn:hover:not(:disabled), .auth-submit:hover:not(:disabled){background:var(--azul-oscuro);}
+  .search-btn:hover{background:var(--azul-oscuro);}
+  .pagination button:not(.active):not(.arrow-btn):hover{border-color:var(--azul);}
+  .site-footer-col a, .breadcrumb a, .account a, .mm-col a, .link-more{transition:color .15s ease;}
+
+  /* filas de las tablas del admin */
+  .admin-row{transition:background .15s ease;}
+  .admin-row:hover{background:#f8f9fe;}
+
+  /* Si la persona pidió menos movimiento en su sistema, se apaga todo. */
+  @media(prefers-reduced-motion:reduce){
+    *, *::before, *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important;}
+  }

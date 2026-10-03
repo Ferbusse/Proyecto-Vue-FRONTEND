@@ -1,7 +1,4 @@
 <template>
-  <!-- El pago es una secuencia real de 3 pasos, así que un indicador
-       numerado tiene sentido acá (a diferencia de usarlo como
-       decoración en contenido que no es realmente secuencial). -->
   <ol class="pago-pasos" aria-label="Progreso de la compra">
     <li
       v-for="paso in pasos"
